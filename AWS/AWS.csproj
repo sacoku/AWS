@@ -266,7 +266,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="satellite.ico" />
-    <Content Include="TextFile1.txt" />
   </ItemGroup>
   <ItemGroup>
     <PublishFile Include="logconfig.xml">
