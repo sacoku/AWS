@@ -889,6 +889,7 @@ namespace AWS.CONTROL
 						if (bWatchdogIsRun == false) break;
                         DataRow[] result = readDataSet.Tables[0].Select("receivetime = '" + startDateTime + "'");
 
+
                         if (result == null || result.Length <= 0)
                         {
                             iLog.Debug("[" + (int)iPanelIdx + "]lost time : " + startDateTime.ToString("HH:mm:ss"));
