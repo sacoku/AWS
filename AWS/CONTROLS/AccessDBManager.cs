@@ -1,0 +1,299 @@
+﻿using AWS.MODEL;
+using log4net;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AWS.CONTROLS
+{
+    class AccessDBManager
+    {
+        private static AccessDBManager _INSTANCE = null;
+
+        private OleDbConnection conn = null;
+        static ILog iLog = log4net.LogManager.GetLogger("Logger");
+
+        public AccessDBManager() {; }
+        public static AccessDBManager GetInstance()
+        {
+            if (_INSTANCE == null)
+                _INSTANCE = new AccessDBManager();
+            return _INSTANCE;
+        }
+
+        public OleDbConnection Connect(string dataSourceFile)
+        {
+            try
+            {
+                if (conn != null) Close();
+                conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + dataSourceFile);
+                conn.Open();
+                return conn;
+            } catch(Exception e)
+            {
+                iLog.Error(e.Message);
+                throw e;
+            }
+        }
+
+        public void Close()
+        {
+            if (conn != null) conn.Close();
+            conn = null;
+        }
+
+        public bool CreateDatabase(string fullFilename)
+        {
+            bool succeeded = false;
+            OleDbConnection conn = null;
+
+            try
+            {
+                if (!File.Exists(fullFilename))
+                {
+                    string newDB = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + fullFilename;
+                    Type objClassType = Type.GetTypeFromProgID("ADOX.Catalog");
+                    if (objClassType != null)
+                    {
+                        object obj = Activator.CreateInstance(objClassType);
+                        // Create MDB file 
+                        obj.GetType().InvokeMember("Create", System.Reflection.BindingFlags.InvokeMethod, null, obj,
+                                  new object[] { "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + newDB + ";" });
+                        succeeded = true;
+                        // Clean up
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+                        obj = null;
+                        try
+                        {
+                            conn = new OleDbConnection();
+                            OleDbCommand connCmd = new OleDbCommand();
+
+                            conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fullFilename;
+                            conn.Open();
+                            connCmd.Connection = conn;
+                            //connCmd.CommandText = "CREATE TABLE aws_min(receivetime datetime PRIMARY KEY,temp Double,wd Double,ws Double,gust_wd Double,gust_ws Double,"
+                            //                         + "rain Double, press Double, israin Double,  humidity Double,heightofsurface Double, freezingofsurface Double, status Double, tempofsurface Double, "
+                            //                         + "freezingtempofsurface Double, snowofsurface Double, saltofsurface Double , frictionofsurface Double, statusofload Double, visibility Double, currentcode Double"
+                            //                         + ")";
+
+                            connCmd.CommandText = "CREATE TABLE AWS_MIN(										\n"
+                                                     + "                   DEV_IDX INT											\n"
+                                                     + "                  ,RECEIVETIME DATETIME PRIMARY KEY			\n"
+													 + "                  ,ATMO DOUBLE											\n"
+													 + "                  ,MIN_ATMO DOUBLE									\n"
+													 + "                  ,MAX_ATMO DOUBLE									\n"
+													 + "                  ,TEMP DOUBLE											\n"
+                                                     + "                  ,MIN_TEMP DOUBLE									\n"
+                                                     + "                  ,MAX_TEMP DOUBLE									\n"
+                                                     + "                  ,WD DOUBLE											\n"
+                                                     + "                  ,MIN_WD DOUBLE										\n"
+                                                     + "                  ,MAX_WD DOUBLE										\n"
+                                                     + "                  ,WS DOUBLE												\n"
+                                                     + "                  ,MIN_WS DOUBLE										\n"
+                                                     + "                  ,MAX_WS DOUBLE										\n"
+                                                     + "                  ,RAIN DOUBLE											\n"
+                                                     + "                  ,ISRAIN DOUBLE										\n"
+                                                     + "                  ,HUMIDITY DOUBLE									\n"
+                                                     + "                  ,MIN_HUMIDITY DOUBLE								\n"
+                                                     + "                  ,MAX_HUMIDITY DOUBLE							\n"
+                                                     + "                  ,SUNSHINE DOUBLE									\n"
+                                                     + "                  ,VISIBILITY DOUBLE									\n"
+                                                     + ")";
+                            iLog.Debug(connCmd.CommandText);
+                            connCmd.ExecuteNonQuery();
+
+                            iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
+                        }
+                        catch (Exception ex)
+                        {
+                            iLog.Error(ex.Message);
+                        }
+                        finally
+                        {
+                            conn.Close();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                iLog.Error("Could not create database file: " + fullFilename + "\n\n" + ex.Message);
+            }
+
+            return succeeded;
+        }
+
+        public double[] GetSensorMaxData()
+        {
+            double[] value = null;
+            try
+            {
+                if (conn == null) throw new Exception("접속되어 있지 않습니다.");
+
+                string sql = "SELECT                                                   \n"
+							 + "         MAX(ATMO) AS MIN_ATMO                 \n"
+							 + "        ,MAX(TEMP) AS MIN_TEMP                 \n"
+                             + "        ,MAX(WS) AS MIN_WS                       \n"
+                             + "        ,MAX(WD) AS MIN_WD                      \n"
+                             + "        ,MAX(HUMIDITY) AS MIN_HUMIDITY     \n"
+                             + "FROM AWS_MIN                                          ";
+
+                iLog.Debug("[QUERY]\n" + sql);
+
+                OleDbCommand cmd = new OleDbCommand(sql, conn);
+                OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
+                DataSet readDataSet = new DataSet();
+
+                //conn.Open();
+                myDataAdapter.Fill(readDataSet, "aws_min");
+                if (readDataSet.Tables[0].Rows.Count > 0)
+                {
+                    DataRow row = readDataSet.Tables[0].Rows[0];
+
+                    value = new double[row.ItemArray.Length];
+                    for (int i = 0; i < row.ItemArray.Length; i++)
+                    {
+                        value[i] = (row.ItemArray.GetValue(i).ToString() == "" ? 0 : double.Parse(row.ItemArray.GetValue(i).ToString()));
+                    }
+                }
+
+                return value;
+            }
+            catch (Exception e)
+            {
+                iLog.Error(e.Message);
+                throw e;
+            } finally
+            {
+                //conn.Close();
+            }
+        }
+
+        public double[] GetSensorMinData()
+        {
+            double[] value = null;
+            try
+            {
+                if (conn == null) throw new Exception("접속되어 있지 않습니다.");
+                
+                string sql = "SELECT                                                   \n"
+							 + "         MIN(ATMO) AS MIN_ATMO                 \n"
+							 + "        ,MIN(TEMP) AS MIN_TEMP                 \n"
+                             + "        ,MIN(WS) AS MIN_WS                       \n"
+                             + "        ,MIN(WD) AS MIN_WD                      \n"
+                             + "        ,MIN(HUMIDITY) AS MIN_HUMIDITY     \n"
+                             + "FROM AWS_MIN                                          ";
+
+                iLog.Debug("[QUERY]\n" + sql);
+
+                OleDbCommand cmd = new OleDbCommand(sql, conn);
+                OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
+                DataSet readDataSet = new DataSet();
+
+                //conn.Open();
+                myDataAdapter.Fill(readDataSet, "aws_min");
+                if (readDataSet.Tables[0].Rows.Count > 0)
+                {
+                    DataRow row = readDataSet.Tables[0].Rows[0];
+
+                    value = new double[row.ItemArray.Length];
+                    for (int i = 0; i < row.ItemArray.Length; i++)
+                    {
+                        value[i] = (row.ItemArray.GetValue(i).ToString() == "" ? 0 : double.Parse(row.ItemArray.GetValue(i).ToString()));
+                    }
+                }
+
+                return value;
+            } 
+            catch(Exception e)
+            {
+                iLog.Error(e.Message);
+                throw e;
+            } finally
+            {
+                //conn.Close();
+            }
+        }
+
+        public void InsertSensorData(DateTime dt, int dev_idx, KMA2 kma, double[] min_values, double[] max_values)
+        {
+            try
+            {
+                if (conn == null) throw new Exception("접속되어 있지 않습니다.");
+
+				double atmo = double.Parse(String.Format("{0:0}", kma.Sensor_6_Datas / 10.0));
+				double temp = double.Parse(String.Format("{0:F1}", (kma.Sensor_0_Datas / 10.0) - 100.0));      //온도
+                double wd = kma.Sensor_1_Datas / 10.0;                                                                         //풍향
+                double ws = kma.Sensor_2_Datas / 10.0;                                                                         //풍속
+                double rain = kma.Sensor_5_Datas / 10.0;                                                                       //강우
+                double israin = kma.Sensor_7_Datas;                                                                              //강우감지
+                double humidity = double.Parse(String.Format("{0:0}", kma.Sensor_9_Datas / 10.0));                 //습도
+                double sunshine = double.Parse(string.Format("{0:0.0}", (kma.Sensor1_1_Datas / 3600)));          //일조
+                double visibility = kma.Spare1_Sensor_1_Datas;
+
+                string sql = "INSERT INTO AWS_MIN(													\n"
+                            + "                      DEV_IDX													\n"
+                            + "                     ,RECEIVETIME												\n"
+							+ "                     ,ATMO														\n"
+							+ "                     ,MIN_ATMO												\n"
+							+ "                     ,MAX_ATMO												\n"
+							+ "                     ,TEMP														\n"
+                            + "                     ,MIN_TEMP													\n"
+                            + "                     ,MAX_TEMP												\n"
+                            + "                     ,WD															\n"
+                            + "                     ,MIN_WD													\n"
+                            + "                     ,MAX_WD													\n"
+                            + "                     ,WS															\n"
+                            + "                     ,MIN_WS													\n"
+                            + "                     ,MAX_WS													\n"
+                            + "                     ,RAIN														\n"
+                            + "                     ,ISRAIN														\n"
+                            + "                     ,HUMIDITY													\n"
+                            + "                     ,MIN_HUMIDITY											\n"
+                            + "                     ,MAX_HUMIDITY											\n"
+                            + "                     ,SUNSHINE													\n"
+                            + "                     ,VISIBILITY													\n"
+                            + ") VALUES(																		\n"
+                            + dev_idx
+                            + ",'" + dt + "'"
+							+ "," + atmo
+							+ "," + ((min_values[0] != 0 && min_values[0] < atmo) ? min_values[0] : atmo)
+							+ "," + ((max_values[0] != 0 && max_values[0] > atmo) ? max_values[0] : atmo)
+							+ "," + temp
+                            + "," + ((min_values[1] != 0 && min_values[1] < temp) ? min_values[1] : temp)
+                            + "," + ((max_values[1] != 0 && max_values[1] > temp) ? max_values[1] : temp)
+                            + "," + wd
+                            + "," + ((min_values[2] != 0 && min_values[2] < wd) ? min_values[2] : wd)
+                            + "," + ((max_values[2] != 0 && max_values[2] > wd) ? max_values[2] : wd)
+                            + "," + ws
+                            + "," + ((min_values[3] != 0 && min_values[3] < ws) ? min_values[3] : ws)
+                            + "," + ((max_values[3] != 0 && max_values[3] > ws) ? max_values[3] : ws)
+                            + "," + rain
+                            + "," + israin
+                            + "," + humidity
+                            + "," + ((min_values[4] != 0 && min_values[4] < humidity) ? min_values[4] : humidity)
+                            + "," + ((max_values[4] != 0 && max_values[4] > humidity) ? max_values[4] : humidity)
+                            + "," + sunshine
+                            + "," + visibility
+                            + ") ";
+                iLog.Debug("[QUERY]\n" + sql);
+
+                OleDbCommand cmd = new OleDbCommand(sql, conn);
+                //conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                iLog.Error(e.Message);
+            } finally
+            {
+                //conn.Close();
+            }
+        }
+    }
+}
