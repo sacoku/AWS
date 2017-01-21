@@ -20,7 +20,6 @@ namespace AWS
         public ReportForm reportForm = null;
         public DataLogger[] logger = null;
 
-        private EnvironmentSettingForm environmentSettingForm = null;
         //데이타를 수집하기 위한 스레드 객체
         public Thread makeThread = null;
         private bool isFlag = true;
@@ -71,25 +70,19 @@ namespace AWS
 
 				this.displayForm = new DisplayForm(this);
 				this.reportForm = new ReportForm(this);
-
-				this.environmentSettingForm = new EnvironmentSettingForm(this);
-
 				this.displayForm2 = new DisplayForm2(this);
 
 				this.displayForm.ControlBox = false;
 				this.displayForm2.ControlBox = false;
 
-
 				this.displayForm.MdiParent = this;
 				this.reportForm.MdiParent = this;
-				this.environmentSettingForm.MdiParent = this;
-
 				this.displayForm2.MdiParent = this;
 
 				//this.displayForm.Show();
 				this.displayForm2.Show();
-				this.displayForm2.Dock = DockStyle.Fill;
 
+				this.displayForm2.Dock = DockStyle.Fill;
 				this.reportForm.Dock = DockStyle.Fill;
 
 				checkAccessFile();

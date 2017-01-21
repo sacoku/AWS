@@ -166,12 +166,6 @@
     <Compile Include="VIEW\DisplayForm2.Designer.cs">
       <DependentUpon>DisplayForm2.cs</DependentUpon>
     </Compile>
-    <Compile Include="VIEW\EnvironmentSettingForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="VIEW\EnvironmentSettingForm.Designer.cs">
-      <DependentUpon>EnvironmentSettingForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="VIEW\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -197,9 +191,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="VIEW\DisplayForm2.resx">
       <DependentUpon>DisplayForm2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="VIEW\EnvironmentSettingForm.resx">
-      <DependentUpon>EnvironmentSettingForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VIEW\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
