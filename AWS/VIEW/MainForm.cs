@@ -23,7 +23,6 @@ namespace AWS
     {
         public DisplayForm displayForm = null;
         public ReportForm reportForm = null;
-        public ControlForm controlForm = null;
         public DataLogger[] logger = null;
 
         private EnvironmentSettingForm environmentSettingForm = null;
@@ -89,7 +88,6 @@ namespace AWS
 
 				this.displayForm = new DisplayForm(this);
 				this.reportForm = new ReportForm(this);
-				this.controlForm = new ControlForm(this);
 
 				this.environmentSettingForm = new EnvironmentSettingForm(this);
 
@@ -101,7 +99,6 @@ namespace AWS
 
 				this.displayForm.MdiParent = this;
 				this.reportForm.MdiParent = this;
-				this.controlForm.MdiParent = this;
 				this.environmentSettingForm.MdiParent = this;
 
 				this.displayForm2.MdiParent = this;
