@@ -1,9 +1,6 @@
 ﻿using System;
-
 using System.Drawing;
-
 using System.Windows.Forms;
-
 using AWS.CONTROL;
 using AWS.VIEW;
 using System.IO;
@@ -11,11 +8,9 @@ using System.Threading;
 using AWS.CONTROLS;
 using System.Diagnostics;
 using log4net;
-using System.Globalization;
 using AWS.Config;
 using AWS.UTIL;
 using System.Data.OleDb;
-using System.Data;
 
 namespace AWS
 {
@@ -40,28 +35,15 @@ namespace AWS
         {
             InitializeComponent();
 
-            /*
-                        string strHomePath = CommonUtil.ReadReg("HOME_PATH");
-                        if(strHomePath == null)
-                        {
-                            MessageBox.Show("라이센스키가 존재하지 않습니다.");
-                            iLog.Error("라이센스키가 존재하지 않습니다.");
-                            Environment.Exit(-1);
-                        }
-
-                        AWSConfig.Load(strHomePath + "Config\\AWSConfig.xml");  
-            */
-
-            //AWSConfig.Load("D:\\00. Work\\ZZ. Private Work\\03. 황인태\\기상청\\작업중\\AWSForLoad\\Config\\AWSConfig.xml");  
-            try
-            {
+			//++ add by sacoku
+			try
+			{
                 //REGISTRY에서 HOME_PATH를 불러옴..
                 AWSConfig.HOME_PATH = CommonUtil.ReadReg("HOME_PATH");
-
                 iLog.Info(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
                 AWSConfig.Load(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
-            }
-            catch (Exception e)
+			}
+			catch (Exception e)
             {
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
                 if (dialog.ShowDialog() == DialogResult.OK)
@@ -82,8 +64,9 @@ namespace AWS
                 else
                     Environment.Exit(-1);
             }
+			//add by sacoku ++
 
-            try
+			try
 			{
 
 				this.displayForm = new DisplayForm(this);
@@ -103,7 +86,6 @@ namespace AWS
 
 				this.displayForm2.MdiParent = this;
 
-
 				//this.displayForm.Show();
 				this.displayForm2.Show();
 				this.displayForm2.Dock = DockStyle.Fill;
@@ -120,9 +102,8 @@ namespace AWS
 
 				this.init();
 
+				//add by sacoku
 				loggerCnt = AWS.Config.AWSConfig.sCount;
-				//loggerCnt = 1;
-
 				logger = new DataLogger[loggerCnt];
 				for (int i = 0; i < loggerCnt; i++)
 				{

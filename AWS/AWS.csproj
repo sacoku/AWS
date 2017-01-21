@@ -251,9 +251,6 @@
     <Content Include="logconfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="VIEW\aws.mdb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="satellite.ico" />
   </ItemGroup>
   <ItemGroup>
