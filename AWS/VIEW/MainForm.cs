@@ -12,6 +12,8 @@ using AWS.Config;
 using AWS.UTIL;
 using System.Data.OleDb;
 
+#pragma warning disable 0168
+
 namespace AWS
 {
     public partial class MainForm : Form
@@ -380,11 +382,7 @@ namespace AWS
                 return;
 
             DateTime currentTime = DateTime.Now;
-            OleDbConnection con = null;
-            OleDbCommand cmd = null;
-
             String fileName = String.Format("{0:yyyyMMdd}", currentTime);
-
             String year = String.Format("{0:yyyy}", currentTime);
             String month = String.Format("{0:MM}", currentTime);
             String day = String.Format("{0:dd}", currentTime);

@@ -58,7 +58,8 @@ namespace AWS.CONTROL
         Boolean isCurrRequest = false;
         Boolean isLostRequest = false;
         Boolean bWatchdogIsRun = true;
-        System.Threading.Thread thWatchDog;
+		Boolean bIsReadyToRun = false;
+        Thread thWatchDog = null;
 
         private object lockObject = new object();
 
@@ -104,8 +105,8 @@ namespace AWS.CONTROL
             catch (Exception ex)
             {
                 //this.mainForm.displayStatus("컴포트 오픈 실패!", Color.Red);
-                this.mainForm.displayStatus("[P_IDX:"+iPanelIdx+"] 접속 실패!", Color.Red);
-                iLog.Error("[P_IDX: "+iPanelIdx+"][ERROR] 접속 실패 : " + ex.Message);
+                this.mainForm.displayStatus("[I:"+iPanelIdx+"] 접속 실패!", Color.Red);
+                iLog.Error("[I: "+iPanelIdx+"][ERROR] 접속 실패 : " + ex.Message);
             }
 
             try
@@ -114,7 +115,7 @@ namespace AWS.CONTROL
             }
             catch (Exception E)
             {
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] : " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + E.Message);
             }
                   
 
@@ -122,8 +123,9 @@ namespace AWS.CONTROL
             m_DateTimeCommandDt = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, 0, 30);          // 각시간당 20초에 시간 설정 명령을 보내기 위해서 설정
 
             try
-            {               
-                CollectThread = new Thread(new ThreadStart(StartCollect));
+            {
+				Thread.Sleep(5000);	//Delay를 주고 시작한다.
+				CollectThread = new Thread(new ThreadStart(StartCollect));
                 CollectThread.Name = "collectDataForOWI";
                 CollectThread.Start();
             }
@@ -135,8 +137,22 @@ namespace AWS.CONTROL
 
                 }
 
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] : " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + E.Message);
             }
+
+			try
+			{
+				//add by sacoku - 실시간 데이터 복구 모드 추가
+				if (bRealTimeRecovery)
+				{
+					iLog.Info("복구 모드가 실시간으로 동작합니다.");
+					StartWatchDog();
+				}
+			}
+			catch(Exception e)
+			{
+				iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + e.Message);
+			}
         }
 
         public void OnDisconnected(object sender, EventArgs e)
@@ -159,7 +175,7 @@ namespace AWS.CONTROL
             IPAddress ipAddress = IPAddress.Parse(environment.IP);
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, environment.PORT);
 
-            iLog.Info("[P_IDX: " + iPanelIdx + "] " + (iRetryConnCnt + 1) + "번째 재접속 합니다");
+            iLog.Info("[I: " + iPanelIdx + "] " + (iRetryConnCnt + 1) + "번째 재접속 합니다");
             // Create a TCP/IP socket.
             client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -186,9 +202,6 @@ namespace AWS.CONTROL
         public void StartCollect()
         {
             int nFailCnt = 0;
-            Boolean isRunWatchdog = false;
-
-            Thread.Sleep(5000);
 
             while (flag)
             {
@@ -198,7 +211,7 @@ namespace AWS.CONTROL
                     if (iRetryConnCnt > 5)
                     {
                         iLog.Error("재접속 횟수가 10회를 초과하여 접속 시도를 종료합니다.");
-                        //this.CloseLogger();
+                        this.CloseLogger();
                         return;
                     }
 
@@ -221,7 +234,7 @@ namespace AWS.CONTROL
                     DateTime SyncDateTime = DateTime.Now;              
 
                     this.SendCommand(SyncDateTime, this.StrToByteArray("AT?"));
-                    iLog.Info("[P_IDX: " + iPanelIdx + "][MESSAGE TO LOGGER] TIMESYNC MESSAGE");
+                    iLog.Info("[I: " + iPanelIdx + "][MESSAGE TO LOGGER] TIMESYNC MESSAGE");
                     bFlag = true;
                 }
 
@@ -230,14 +243,6 @@ namespace AWS.CONTROL
                 {
                     try
                     {
-						//add by sacoku - 실시간 데이터 복구 모드 추가
-                        if (bRealTimeRecovery && !isRunWatchdog)
-                        {
-                            iLog.Info("실시간 복구 모드가 동작합니다....");
-                            isRunWatchdog = true;
-                            recoveryWatchDog();
-                        }
-
                         // 현재 자료를 요구 할때 만약 1분 이상시간이 지나면 시간을 바꾸어서 새로운 자료를 요구한다.
                         //System.TimeSpan tSpan = new TimeSpan(0, 0, 1, 0, 0);
 
@@ -247,28 +252,57 @@ namespace AWS.CONTROL
 
                             // 현재 데이터를 요구한다
                             this.WeatherSendCommand(m_CollectDt, this.StrToByteArray("AB?"));
-                            iLog.Info("[P_IDX: " + iPanelIdx + "][MESSAGE TO LOGGER] CURRENT DATA CALL " + m_CollectDt.Year + "/" + m_CollectDt.Month + "/" + m_CollectDt.Day + " " + m_CollectDt.Hour + ":" + m_CollectDt.Minute + " 데이터 요청");
+                            iLog.Info( "[I: " 
+								     + iPanelIdx 
+									 + "][MESSAGE TO LOGGER] CURRENT DATA CALL " 
+									 + m_CollectDt.Year 
+									 + "/" 
+									 + m_CollectDt.Month 
+									 + "/" 
+									 + m_CollectDt.Day 
+									 + " " 
+									 + m_CollectDt.Hour 
+									 + ":" 
+									 + m_CollectDt.Minute + " 데이터 요청");
+
                             isCurrRequest = true;
-                            while(isCurrRequest == true)
-                            {
-                                Thread.Sleep(1000);
+
+							Thread.Sleep(1000);
+							while (isCurrRequest == true)
+                            {   
                                 if (nFailCnt > 60)
                                 {
-                                    iLog.Info("[P_IDX: " + iPanelIdx + "] 현재 데이터 요청 응답이 없습니다. 재시도 합니다..");
+                                    iLog.Info("[I: " + iPanelIdx + "] 현재 데이터 요청 응답이 없습니다. 재시도 합니다..");
                                     nFailCnt = 0;
                                     isCurrRequest = false;
                                     break;
                                 } else
                                     nFailCnt++;
-                            }
+
+								Thread.Sleep(1000);
+							}
                         }
-                    }
+
+						bIsReadyToRun = true;
+					}
                     catch (Exception E)
                     {
-                        iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] DataLogger : StartCollect2 " + E.Message);
+                        iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : StartCollect2 " + E.Message);
                     }
 
-                    iLog.Info("[P_IDX: " + iPanelIdx + "] m_CollectDt TIME : " + m_CollectDt.Year + "/" + m_CollectDt.Month + "/" + m_CollectDt.Day + " " + m_CollectDt.Hour + ":" + m_CollectDt.Minute + ":" + m_CollectDt.Second);
+                    iLog.Info(    "[I: " + iPanelIdx 
+								+ "] m_CollectDt TIME : " 
+								+ m_CollectDt.Year 
+								+ "/" 
+								+ m_CollectDt.Month 
+								+ "/" 
+								+ m_CollectDt.Day 
+								+ " " 
+								+ m_CollectDt.Hour 
+								+ ":" 
+								+ m_CollectDt.Minute 
+								+ ":" + m_CollectDt.Second);
+
                     bFlag = true;
                 } else
                 {
@@ -328,8 +362,7 @@ namespace AWS.CONTROL
             }
             catch (Exception E)
             {
-                Debug.WriteLine(E.ToString());
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] : " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + E.Message);
             }
         }
 
@@ -364,8 +397,7 @@ namespace AWS.CONTROL
             }
             catch (Exception E)
             {
-                Debug.WriteLine(E.ToString());
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] : " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + E.Message);
             }
         }
 
@@ -400,8 +432,7 @@ namespace AWS.CONTROL
             }
             catch (Exception E)
             {
-                Debug.WriteLine(E.ToString());
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] : " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + E.Message);
             }
         }
         
@@ -438,8 +469,7 @@ namespace AWS.CONTROL
             }
             catch (Exception E)
             {
-                Debug.WriteLine(E.ToString());
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] : " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + E.Message);
             }
         }
         
@@ -530,13 +560,13 @@ namespace AWS.CONTROL
                         data[1] = "데이터로거에 과거자료 요청";
                     }
 
-                    this.mainForm.displayStatus("[P_IDX: " + iPanelIdx + "]" + data[1], Color.Red);
-                    iLog.Debug("[P_IDX: " + iPanelIdx + "]" + data[0] + " " + data[1]);
+                    this.mainForm.displayStatus("[I: " + iPanelIdx + "]" + data[1], Color.Red);
+                    iLog.Debug("[I: " + iPanelIdx + "]" + data[0] + " " + data[1]);
                 }
             }
             catch (Exception e)
             {
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] : SendCommand " + e.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] : SendCommand " + e.Message);
                 if (!this.ClientSocket.Connected())
                     reConnect();
             }
@@ -683,15 +713,15 @@ namespace AWS.CONTROL
                         this.mainForm.displayStatus(data[1], Color.Blue);
                     }
                 }
-                this.mainForm.displayStatus("[P_IDX: " + iPanelIdx + "]" + data[1], Color.Blue);
+                this.mainForm.displayStatus("[I: " + iPanelIdx + "]" + data[1], Color.Blue);
                 this.mainForm.setTXRX(0);
                 isCommand = false;
 
-                iLog.Debug("[P_IDX: " + iPanelIdx + "]" + data[0] + " " + data[1]);
+                iLog.Debug("[I: " + iPanelIdx + "]" + data[0] + " " + data[1]);
             }
             catch (Exception E)
             {
-                iLog.Info("[P_IDX: " + iPanelIdx + "][ERROR] DataLogger : AnswerProtocolCatch2 " + E.Message);
+                iLog.Info("[I: " + iPanelIdx + "][ERROR] DataLogger : AnswerProtocolCatch2 " + E.Message);
                 return false;
             }
 
@@ -702,7 +732,7 @@ namespace AWS.CONTROL
         {
             this.flag = false;
             bWatchdogIsRun = false;
-            if(thWatchDog != null) thWatchDog.Abort();
+            if(thWatchDog != null) thWatchDog.Join();
             if (this.ClientSocket != null)
                 this.ClientSocket.Close();
         }     
@@ -717,14 +747,33 @@ namespace AWS.CONTROL
                 this.saveData.kma2 = new KMA2(); // 기상데이터 프로토콜 처리 클래스 생성
                 saveData.kma2 = KMA2.SetByte(Data); // 기상데이터 프로토콜에 데이터를 넣는다.  
 
-                iLog.Debug( " 데이터 저장 [" + ((int)saveData.kma2.Year) + "/" + (int)saveData.kma2.Month + "/" + (int)saveData.kma2.Day + "/" + (int)saveData.kma2.Hour + "/" + (int)saveData.kma2.Minute + "]");
-                DateTime receive = new DateTime(2000 + ((int)saveData.kma2.Year), (int)saveData.kma2.Month, (int)saveData.kma2.Day, (int)saveData.kma2.Hour, (int)saveData.kma2.Minute, 0);
+                iLog.Debug(   " 데이터 저장 [" 
+							+ ((int)saveData.kma2.Year) 
+							+ "/" 
+							+ (int)saveData.kma2.Month 
+							+ "/" 
+							+ (int)saveData.kma2.Day 
+							+ "/" 
+							+ (int)saveData.kma2.Hour 
+							+ "/" 
+							+ (int)saveData.kma2.Minute 
+							+ "]");
+
+                DateTime receive = new DateTime( 2000 + ((int)saveData.kma2.Year)
+												, (int)saveData.kma2.Month
+												, (int)saveData.kma2.Day
+												, (int)saveData.kma2.Hour
+												, (int)saveData.kma2.Minute, 0);
 
                 //현재데이터
-                if ((receive.Year == DateTime.Now.Year) && (receive.Month == DateTime.Now.Month) && (receive.Day == DateTime.Now.Day)
-                    && (receive.Hour == DateTime.Now.Hour) && (receive.Minute == DateTime.Now.Minute))
-                    {
-                    this.mainForm.setTXRX(0);
+                if (   (receive.Year == DateTime.Now.Year) 
+					&& (receive.Month == DateTime.Now.Month) 
+					&& (receive.Day == DateTime.Now.Day)
+                    && (receive.Hour == DateTime.Now.Hour) 
+					&& (receive.Minute == DateTime.Now.Minute) )
+				{
+					isCurrRequest = false;
+					this.mainForm.setTXRX(0);
                     this.m_CollectDt += new TimeSpan(0, 0, 1, 0, 0);
                     String[] dispalyData = new String[2];
 
@@ -739,22 +788,22 @@ namespace AWS.CONTROL
                     dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                     dispalyData[1] = receivedTime[1] + "현재 데이터 수신";
 
-                    iLog.Info("[P_IDX: " + iPanelIdx + "][MESSAGE FROM LOGGER] " + receivedTime[1] + " 현재 데이터 수신");
+                    iLog.Info("[I: " + iPanelIdx + "][MESSAGE FROM LOGGER] " + receivedTime[1] + " 현재 데이터 수신");
 
-                    this.mainForm.displayStatus("[P_IDX: " + iPanelIdx + "]" + dispalyData[0] + " " + dispalyData[1], Color.Blue);
+                    this.mainForm.displayStatus("[I: " + iPanelIdx + "]" + dispalyData[0] + " " + dispalyData[1], Color.Blue);
 
                     //SafeInvokeHelper.Invoke(this.mainForm.displayForm, "DisplayData", displayKMA2);
                     SafeInvokeHelper.Invoke(this.mainForm.displayForm2, "DisplayData", displayKMA2, iPanelIdx);
 
-                    System.Threading.Thread WeatherProcThread = new System.Threading.Thread(new System.Threading.ThreadStart(saveData.SaveWeatherData));
+                    Thread WeatherProcThread = new Thread(new ThreadStart(saveData.SaveWeatherData));
                     WeatherProcThread.Name = "WeatherThread";
                     WeatherProcThread.IsBackground = true;
                     WeatherProcThread.Start();
-                    isCurrRequest = false;
                 } 
                 else
                 {
-                    this.saveData.kma2 = new KMA2(); // 기상데이터 프로토콜 처리 클래스 생성
+					isLostRequest = false;
+					this.saveData.kma2 = new KMA2(); // 기상데이터 프로토콜 처리 클래스 생성
                     saveData.lastKma2 = KMA2.SetByte(Data); // 기상데이터 프로토콜에 데이터를 넣는다.  
                     saveData.ByteChangAllLastData();
 
@@ -763,32 +812,35 @@ namespace AWS.CONTROL
                     String[] dispalyData = new String[2];
                     String[] receivedTime = resultData.Split(',');
 
-                    String result = string.Format("{0:00}", saveData.lastKma2.Year + 2000) + "/" + string.Format("{0:00}", saveData.lastKma2.Month) + "/" + string.Format("{0:00}", saveData.lastKma2.Day) + " " +  string.Format("{0:00}", saveData.lastKma2.Hour) + ":" + string.Format("{0:00}", saveData.lastKma2.Minute);
+                    String result = string.Format("{0:00}", saveData.lastKma2.Year + 2000) 
+								  + "/" 
+								  + string.Format("{0:00}", saveData.lastKma2.Month) 
+								  + "/" 
+								  + string.Format("{0:00}", saveData.lastKma2.Day) 
+								  + " " 
+								  +  string.Format("{0:00}", saveData.lastKma2.Hour) 
+								  + ":" 
+								  + string.Format("{0:00}", saveData.lastKma2.Minute);
 
                     dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                     dispalyData[1] = result + "과거 데이터 수신";
 
-                    iLog.Info("[P_IDX: " + iPanelIdx + "][MESSAGE FROM LOGGER] " + result + " 과거 데이터 수신");
+                    iLog.Info("[I: " + iPanelIdx + "][MESSAGE FROM LOGGER] " + result + " 과거 데이터 수신");
 
-                    //System.Threading.Thread WeatherProcThread = new System.Threading.Thread(new System.Threading.ThreadStart(saveData.saveLastData));
-                    System.Threading.Thread WeatherProcThread = new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(saveData.saveLastData));
+                    Thread WeatherProcThread = new Thread(new ParameterizedThreadStart(saveData.saveLastData));
                     WeatherProcThread.Name = "WeatherThread";
                     WeatherProcThread.IsBackground = true;
                     WeatherProcThread.Start(iPanelIdx);
-                    isLostRequest = false;
                 }
 
                 bResult = true;
             }
             catch (Exception E)
             {
-                iLog.Error("[P_IDX: " + iPanelIdx + "][ERROR] DataLogger : KMA2Catch " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : KMA2Catch " + E.Message);
                 bResult = false;
             }
-            finally
-            {
-
-            }
+            
             return bResult;
         }
 
@@ -802,31 +854,36 @@ namespace AWS.CONTROL
             return System.BitConverter.ToUInt16(Temp2, 0);
         }
 
-        public void pause()
+        public void Pause()
         {
             isPause = true;
             iLog.Info(iPanelIdx + " 장치가 Pause 상태입니다.");
         }
 
-        public void resume()
+        public void Resume()
         {
             isPause = false;
             iLog.Info(iPanelIdx + " 장치가 Resume 상태입니다.");
         }
 
-        public void recoveryWatchDog()
+        public void StartWatchDog()
         {
             bWatchdogIsRun = true;
-            System.Threading.Thread th = new System.Threading.Thread((idx) => 
+
+			thWatchDog = new Thread((idx) => 
             {
                 while (bWatchdogIsRun)
                 {
-                    DateTime currentTime = DateTime.Now;
-                    RecoverLostData(currentTime, false);
+					if (bIsReadyToRun)
+					{
+						DateTime currentTime = DateTime.Now;
+						RecoverLostData(currentTime, false);
+					}
                     Thread.Sleep(1000);
                 }
             });
-            th.Start();
+
+			thWatchDog.Start();
         }
 
         public void RecoverLostData(DateTime dt, Boolean isPauseMode)
@@ -852,22 +909,23 @@ namespace AWS.CONTROL
                 iLog.Info("Watchdog을 수행합니다.");
                 DataSet readDataSet = new DataSet();
 
-                String selectQuery = "SELECT                                    "
-                                                      + "         RECEIVETIME                          "
-                                           + "        ,TEMP                                     "
-                                           + "        ,WD                                        "
-                                           + "        ,WS                                        "
-                                           + "        ,RAIN                                      "
-                                           + "        ,ISRAIN                                    "
-                                           + "        ,HUMIDITY                                  "
-                                           + "        ,SUNSHINE                                  "
-                                           + "        ,VISIBILITY                                "
-                                           + "FROM AWS_MIN                                       "
-                                            + "WHERE DEV_IDX = " + iPanelIdx;
+				StringBuilder selectQuery = new StringBuilder()
+									.Append("SELECT										\n")
+									.Append("         RECEIVETIME						\n")
+									.Append("        ,TEMP								\n")
+									.Append("        ,WD								\n")
+									.Append("        ,WS								\n")
+									.Append("        ,RAIN								\n")
+									.Append("        ,ISRAIN							\n")
+									.Append("        ,HUMIDITY							\n")
+									.Append("        ,SUNSHINE							\n")
+									.Append("        ,VISIBILITY						\n")
+									.Append("FROM AWS_MIN								\n")
+									.Append("WHERE DEV_IDX = ").Append(iPanelIdx.ToString());
 
                 iLog.Debug(selectQuery);
                 con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + DBPath);
-                cmd = new OleDbCommand(selectQuery, con);
+                cmd = new OleDbCommand(selectQuery.ToString(), con);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
 
                 con.Open();
@@ -878,45 +936,55 @@ namespace AWS.CONTROL
 
                     DateTime startDateTime = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0);
                     TimeSpan ts = dt - startDateTime;
-
-                    iLog.Debug("[" + (int)iPanelIdx + "]time cnt : " + ts.TotalMinutes);
                     int lostCnt = 0;
 
-                    if(isPauseMode) pause();
+                    if(isPauseMode) Pause();
 
                     for (int rows = 0; rows < (ts.TotalMinutes + 1); rows++)
                     {
 						if (bWatchdogIsRun == false) break;
                         DataRow[] result = readDataSet.Tables[0].Select("receivetime = '" + startDateTime + "'");
 
-
                         if (result == null || result.Length <= 0)
                         {
-                            iLog.Debug("[" + (int)iPanelIdx + "]lost time : " + startDateTime.ToString("HH:mm:ss"));
                             SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
                             isLostRequest = true;
-                            iLog.Info("[P_IDX: " + iPanelIdx + "][MESSAGE TO LOGGER] LOST DATA CALL " + startDateTime.Year + "/" + startDateTime.Month + "/" + startDateTime.Day + " " + startDateTime.Hour + ":" + startDateTime.Minute + " 데이터 요청");
-                            lostCnt++;
-                            while (isLostRequest == true)
+                            iLog.Info(    "[I: " + iPanelIdx 
+										+ "][MESSAGE TO LOGGER] LOST DATA CALL " 
+										+ startDateTime.Year 
+										+ "/" 
+										+ startDateTime.Month 
+										+ "/" 
+										+ startDateTime.Day 
+										+ " " 
+										+ startDateTime.Hour 
+										+ ":" + startDateTime.Minute 
+										+ " 데이터 요청");
+
+							Thread.Sleep(1000);
+							while (isLostRequest == true)
                             {
-                                Thread.Sleep(1000);
-                                if (nFailCnt >= 10)
+                                if (nFailCnt >= 60)
                                 {
-                                    iLog.Info("[P_IDX: " + iPanelIdx + "] 과거자료 요청 재시도 합니다.");
+                                    iLog.Info("[I: " + iPanelIdx + "] 과거자료 요청 재시도 합니다.");
                                     nFailCnt = 0;
 									break;
                                 }
                                 else
                                     nFailCnt++;
-                            }
 
-							Thread.Sleep(1000);
+								Thread.Sleep(1000);
+							}
                         }
 
-                        if(isLostRequest == false) startDateTime = startDateTime.AddMinutes(+1);
+						if (isLostRequest == false)
+						{
+							startDateTime = startDateTime.AddMinutes(+1);
+							lostCnt++;
+						}
                     }
 
-                    if(isPauseMode) resume();
+                    if(isPauseMode) Resume();
                 }
             }
             catch (Exception e)

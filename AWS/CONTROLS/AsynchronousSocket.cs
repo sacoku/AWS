@@ -152,7 +152,6 @@ namespace AWS.CONTROLS
             {
                 if (workSocket != null)
                 {
-
                     if (workSocket.Connected == true)
                     {
                         workSocket.Shutdown(SocketShutdown.Both);
@@ -169,7 +168,6 @@ namespace AWS.CONTROLS
             }
             catch (Exception E)
             {
-                Debug.WriteLine(E.ToString());
                 iLog.Debug(E.Message);
             }
         }

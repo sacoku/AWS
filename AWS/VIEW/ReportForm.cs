@@ -54,7 +54,6 @@ namespace AWS.VIEW
             }
         }
 
-
         public ReportForm(MainForm mainForm)
         {
             this.main = mainForm;
@@ -79,8 +78,9 @@ namespace AWS.VIEW
             item2[1].Code = 0;
             item2[1].Name = "월별 데이터";
             comboBox2.Items.Add(item2[1]);
+			comboBox2.SelectedIndex = 0;
 
-            initGrid(new DateTime(), 0);
+			initGrid(new DateTime(), 0);
             maskedTextBox1.Text = "00:00";
             maskedTextBox2.Text = "23:59:00";
         }
@@ -110,7 +110,7 @@ namespace AWS.VIEW
                 SourceGrid.Cells.Views.ColumnHeader viewColumnHeader = new SourceGrid.Cells.Views.ColumnHeader();
                 DevAge.Drawing.VisualElements.ColumnHeader backHeader = new DevAge.Drawing.VisualElements.ColumnHeader();
                 backHeader.BackColor = Color.LightGray;
-                backHeader.Border = cellBorder; // DevAge.Drawing.RectangleBorder.RectangleBlack1Width;
+                backHeader.Border = cellBorder;
                 viewColumnHeader.Background = backHeader;
                 viewColumnHeader.ForeColor = Color.Black;
                 viewColumnHeader.Font = new Font("굴림", 8, FontStyle.Underline);
@@ -143,7 +143,6 @@ namespace AWS.VIEW
 
                 SensortsReportGrid[1, 0] = columnHeader;
                 SensortsReportGrid[1, 0].Column.Width = colWidth * 3;
-                //SensortsReportGrid[1, 0].RowSpan = 2;           
 
                 int idx = 1;
                 columnHeader = new SourceGrid.Cells.ColumnHeader("기온");
@@ -153,7 +152,6 @@ namespace AWS.VIEW
                 
                 SensortsReportGrid[1, idx] = columnHeader;
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
-                //SensortsReportGrid[1, 1].RowSpan = 2;
                 SensortsReportGrid[1, idx].ColumnSpan = 3; idx += 3;
 
                 columnHeader = new SourceGrid.Cells.ColumnHeader("풍향");
@@ -163,7 +161,6 @@ namespace AWS.VIEW
 
                 SensortsReportGrid[1, idx] = columnHeader;
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
-                //SensortsReportGrid[1, 2].RowSpan = 2;
                 SensortsReportGrid[1, idx].ColumnSpan = 3;
                 idx += 3;
 
@@ -174,7 +171,6 @@ namespace AWS.VIEW
 
                 SensortsReportGrid[1, idx] = columnHeader;
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
-                //SensortsReportGrid[1, 3].RowSpan = 2;
                 SensortsReportGrid[1, idx].ColumnSpan = 3; idx += 3;
 
                 columnHeader = new SourceGrid.Cells.ColumnHeader("강우");
@@ -184,7 +180,6 @@ namespace AWS.VIEW
 
                 SensortsReportGrid[1, idx] = columnHeader;
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
-                //SensortsReportGrid[1, idx].ColumnSpan = 2;
                 idx += 1;
 
                 columnHeader = new SourceGrid.Cells.ColumnHeader("강우감지");
@@ -211,7 +206,6 @@ namespace AWS.VIEW
 
                 SensortsReportGrid[1, idx] = columnHeader;
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3; //665 
-                //SensortsReportGrid[1, idx].ColumnSpan = 2;
                 idx += 1;
 
 
@@ -222,29 +216,14 @@ namespace AWS.VIEW
 
                 SensortsReportGrid[1, idx] = columnHeader;
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3; //665 
-                //SensortsReportGrid[1, idx].ColumnSpan = 2;
 
-
-                /*
-                            columnHeader = new SourceGrid.Cells.ColumnHeader("현천");
-                            columnHeader.View = viewColumnHeader;
-                            columnHeader.View.Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold);
-                            columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
-
-                            SensortsReportGrid[1, 8] = columnHeader;
-                            SensortsReportGrid[1, 8].Column.Width = 45; //665   
-                            SensortsReportGrid[1, 8].RowSpan = 2;
-                */
-
-
-                columnHeader = new SourceGrid.Cells.ColumnHeader("시간");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("시간");
                 columnHeader.View = viewColumnHeader;
                 columnHeader.View.Font = new Font(FontFamily.GenericSansSerif, 8, FontStyle.Bold);
                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
 
                 SensortsReportGrid[2, 0] = columnHeader;
                 SensortsReportGrid[2, 0].Column.Width = colWidth + 20/* * 3*/;
-                //SensortsReportGrid[1, 1].RowSpan = 2;            
 
                 for (int i = 1; i <= columnNum - 1;)
                 {
@@ -288,7 +267,7 @@ namespace AWS.VIEW
                             }
                             break;
                         default:
-                            SensortsReportGrid[2, i].Column.Width = colWidth + 20 /* * 3*/;
+                            SensortsReportGrid[2, i].Column.Width = colWidth + 20;
                             i++;
                             break;
                            
@@ -402,7 +381,6 @@ namespace AWS.VIEW
 
         private void readData(DateTime dateTime, int dev_idx)
         {
-            //DateTime readDateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, 0, 0);
             OleDbConnection con = null;
             OleDbCommand cmd = null;
 
@@ -423,31 +401,32 @@ namespace AWS.VIEW
             DataSet readDataSet = new DataSet();
             
             try
-            {            
-                String selectQuery = "SELECT												\n"
-                                          + "         RECEIVETIME							\n"
-                                          + "        ,TEMP										\n"
-                                          + "        ,MIN_TEMP								\n"
-                                          + "        ,MAX_TEMP								\n"
-                                          + "        ,WD                                            \n"
-                                          + "        ,MIN_WD                                     \n"
-                                          + "        ,MAX_WD                                    \n"
-                                          + "        ,WS                                             \n"
-                                          + "        ,MIN_WS                                      \n"
-                                          + "        ,MAX_WS                                     \n"
-                                          + "        ,RAIN                                           \n"
-                                          + "        ,ISRAIN                                        \n"
-                                          + "        ,HUMIDITY                                   \n"
-                                          + "        ,MIN_HUMIDITY                            \n"
-                                          + "        ,MAX_HUMIDITY                           \n"
-                                          + "        ,SUNSHINE                                  \n"
-                                          + "        ,VISIBILITY                                   \n"
-                                          + "FROM AWS_MIN                                  \n"
-                                          + "WHERE DEV_IDX = " + dev_idx;
+            {
+				StringBuilder selectQuery = new StringBuilder()
+								.Append("SELECT								\n")
+								.Append("   RECEIVETIME						\n")
+								.Append("  ,TEMP							\n")
+								.Append("  ,MIN_TEMP						\n")
+								.Append("  ,MAX_TEMP						\n")
+								.Append("  ,WD								\n")
+								.Append("  ,MIN_WD							\n")
+								.Append("  ,MAX_WD							\n")
+								.Append("  ,WS								\n")
+								.Append("  ,MIN_WS							\n")
+								.Append("  ,MAX_WS							\n")
+								.Append("  ,RAIN							\n")
+								.Append("  ,ISRAIN							\n")
+								.Append("  ,HUMIDITY						\n")
+								.Append("  ,MIN_HUMIDITY					\n")
+								.Append("  ,MAX_HUMIDITY					\n")
+								.Append("  ,SUNSHINE						\n")
+								.Append("  ,VISIBILITY						\n")
+								.Append("FROM AWS_MIN						\n")
+								.Append("WHERE DEV_IDX = ").Append(dev_idx.ToString());
 
                 iLog.Debug("[QUERY] \n" + selectQuery);
                 con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + DBPath);
-                cmd = new OleDbCommand(selectQuery, con);
+                cmd = new OleDbCommand(selectQuery.ToString(), con);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
 
                 con.Open();
@@ -473,7 +452,6 @@ namespace AWS.VIEW
                             SourceGrid.Cells.Views.Cell yellowView = new SourceGrid.Cells.Views.Cell();
                             yellowView.BackColor = Color.Gray;
                             yellowView.ForeColor = Color.White;
-
 
                             if (result == null || result.Length <= 0)
                             {
@@ -525,8 +503,7 @@ namespace AWS.VIEW
             }
             finally
             {
-                //pwdDataSet = null;
-                con.Close();
+				if(con != null) con.Close();
                 cmd = null;
             }            
         }
