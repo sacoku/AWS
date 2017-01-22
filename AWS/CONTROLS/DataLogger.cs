@@ -123,8 +123,7 @@ namespace AWS.CONTROL
             m_DateTimeCommandDt = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, 0, 30);          // 각시간당 20초에 시간 설정 명령을 보내기 위해서 설정
 
             try
-            {
-				Thread.Sleep(5000);	//Delay를 주고 시작한다.
+            {	
 				CollectThread = new Thread(new ThreadStart(StartCollect));
                 CollectThread.Name = "collectDataForOWI";
                 CollectThread.Start();
@@ -203,7 +202,9 @@ namespace AWS.CONTROL
         {
             int nFailCnt = 0;
 
-            while (flag)
+			Thread.Sleep(5000); //Delay를 주고 시작한다.
+
+			while (flag)
             {
                 //add by sacoku 161227
                 if(!ClientSocket.Connected())
@@ -732,7 +733,7 @@ namespace AWS.CONTROL
         {
             this.flag = false;
             bWatchdogIsRun = false;
-            if(thWatchDog != null) thWatchDog.Join();
+            if(thWatchDog != null) thWatchDog.Abort();
             if (this.ClientSocket != null)
                 this.ClientSocket.Close();
         }     
@@ -966,7 +967,6 @@ namespace AWS.CONTROL
                             {
                                 if (nFailCnt >= 60)
                                 {
-                                    iLog.Info("[I: " + iPanelIdx + "] 과거자료 요청 재시도 합니다.");
                                     nFailCnt = 0;
 									break;
                                 }
@@ -978,9 +978,14 @@ namespace AWS.CONTROL
                         }
 
 						if (isLostRequest == false)
-						{
+						{	
 							startDateTime = startDateTime.AddMinutes(+1);
 							lostCnt++;
+
+							iLog.Debug("응답을 받았으며 다음 데이터를 요청합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
+						} else
+						{
+							iLog.Debug("응답을 받지 못해서 재요청 합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
 						}
                     }
 
