@@ -1,0 +1,75 @@
+<AWS>
+	<CONFIG>
+		<COLL_DATA_PERIOD>5</COLL_DATA_PERIOD>		
+		<TIME_SYNC_PERIOD>300</TIME_SYNC_PERIOD>
+		<REALTIME_RECOVERY>false</REALTIME_RECOVERY>
+		<RECOVERY_SCAN_DELAY>5</RECOVERY_SCAN_DELAY>
+		<ORACLE_DB>Data Source=(DESCRIPTION =
+                    (ADDRESS_LIST =                                   
+                      (ADDRESS = (PROTOCOL = TCP)(Host = 106.243.122.101)(Port = 1521))
+                    )
+                    (CONNECT_DATA = 
+                      (SID = ALARM)
+                    )
+                  );User ID=RFMAIN_TEST;Password=RFMAIN_TEST;</ORACLE_DB>
+	</CONFIG>
+	<DEVICES>
+		<DEVICE>
+			<NAME>청송군 신촌리</NAME>
+			<LOCNUM>4272000000</LOCNUM>
+			<IP>192.168.0.1</IP>
+			<PORT>32000</PORT>
+			<ID>101</ID>
+			<PASSWD>0000</PASSWD>
+			<ENABLE>false</ENABLE>
+			<SENSORS>
+				<TEMP name="기온(℃)">true</TEMP>
+				<WINDIR name="풍향">true</WINDIR>
+				<WINSPEED name="풍속(m/s)">true</WINSPEED>
+				<RAINSTATUS name="강우상태">true</RAINSTATUS>
+				<HUMIDITY name="습도(%)">true</HUMIDITY>
+				<RAINFALL name="강우량(mm)">true</RAINFALL>
+				<SUNSHINE name="일조(hour)">true</SUNSHINE>
+				<VISIBILITY name="시정(m)">true</VISIBILITY>
+			</SENSORS>
+		</DEVICE>
+		<DEVICE>
+			<NAME>청송군 화장리</NAME>
+			<LOCNUM>4272010000</LOCNUM>
+			<IP>121.183.52.212</IP>
+			<PORT>32000</PORT>
+			<ID>101</ID>
+			<PASSWD>0000</PASSWD>
+			<ENABLE>true</ENABLE>
+			<SENSORS>
+				<TEMP name="기온(℃)">true</TEMP>
+				<WINDIR name="풍향">false</WINDIR>
+				<WINSPEED name="풍속(m/s)">false</WINSPEED>
+				<RAINSTATUS name="강우상태">false</RAINSTATUS>
+				<HUMIDITY name="습도(%)">true</HUMIDITY>
+				<RAINFALL name="강우량(mm)">false</RAINFALL>
+				<SUNSHINE name="일조(hour)">true</SUNSHINE>
+				<VISIBILITY name="시정(m)">true</VISIBILITY>
+			</SENSORS>
+		</DEVICE>
+		<DEVICE>
+			<NAME>청송군 이현리</NAME>
+			<LOCNUM>4272020000</LOCNUM>
+			<IP>59.24.204.51</IP>
+			<PORT>32000</PORT>
+			<ID>101</ID>
+			<PASSWD>0000</PASSWD>
+			<ENABLE>true</ENABLE>
+			<SENSORS>
+				<TEMP name="기온(℃)">true</TEMP>
+				<WINDIR name="풍향">false</WINDIR>
+				<WINSPEED name="풍속(m/s)">false</WINSPEED>
+				<RAINSTATUS name="강우상태">false</RAINSTATUS>
+				<HUMIDITY name="습도(%)">true</HUMIDITY>
+				<RAINFALL name="강우량(mm)">false</RAINFALL>
+				<SUNSHINE name="일조(hour)">true</SUNSHINE>
+				<VISIBILITY name="시정(m)">true</VISIBILITY>
+			</SENSORS>
+		</DEVICE>
+	</DEVICES>
+</AWS>
