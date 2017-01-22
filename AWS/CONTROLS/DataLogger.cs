@@ -200,8 +200,6 @@ namespace AWS.CONTROL
         /// </summary>
         public void StartCollect()
         {
-            int nFailCnt = 0;
-
 			Thread.Sleep(5000); //Delay를 주고 시작한다.
 
 			while (flag)
@@ -251,40 +249,21 @@ namespace AWS.CONTROL
                         {
                             m_CollectDt = new System.DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 35);
 
-                            // 현재 데이터를 요구한다
-                            this.WeatherSendCommand(m_CollectDt, this.StrToByteArray("AB?"));
-                            iLog.Info( "[I: " 
-								     + iPanelIdx 
-									 + "][MESSAGE TO LOGGER] CURRENT DATA CALL " 
-									 + m_CollectDt.Year 
-									 + "/" 
-									 + m_CollectDt.Month 
-									 + "/" 
-									 + m_CollectDt.Day 
-									 + " " 
-									 + m_CollectDt.Hour 
-									 + ":" 
-									 + m_CollectDt.Minute + " 데이터 요청");
-
-                            isCurrRequest = true;
-
-							Thread.Sleep(1000);
-							while (isCurrRequest == true)
-                            {   
-                                if (nFailCnt > 60)
-                                {
-                                    iLog.Info("[I: " + iPanelIdx + "] 현재 데이터 요청 응답이 없습니다. 재시도 합니다..");
-                                    nFailCnt = 0;
-                                    isCurrRequest = false;
-                                    break;
-                                } else
-                                    nFailCnt++;
-
-								Thread.Sleep(1000);
-							}
+							// 현재 데이터를 요구한다
+							this.WeatherSendCommand(m_CollectDt, this.StrToByteArray("AB?"));
+							iLog.Info("[I: "
+										+ iPanelIdx
+										+ "][MESSAGE TO LOGGER] CURRENT DATA CALL "
+										+ m_CollectDt.Year
+										+ "/"
+										+ m_CollectDt.Month
+										+ "/"
+										+ m_CollectDt.Day
+										+ " "
+										+ m_CollectDt.Hour
+										+ ":"
+										+ m_CollectDt.Minute + " 데이터 요청");
                         }
-
-						bIsReadyToRun = true;
 					}
                     catch (Exception E)
                     {
@@ -800,7 +779,8 @@ namespace AWS.CONTROL
                     WeatherProcThread.Name = "WeatherThread";
                     WeatherProcThread.IsBackground = true;
                     WeatherProcThread.Start();
-                } 
+					bIsReadyToRun = true;
+				} 
                 else
                 {
 					isLostRequest = false;
@@ -880,7 +860,7 @@ namespace AWS.CONTROL
 						DateTime currentTime = DateTime.Now;
 						RecoverLostData(currentTime, false);
 					}
-                    Thread.Sleep(1000);
+                    Thread.Sleep(AWSConfig.SCAN_DELAY);
                 }
             });
 
@@ -965,7 +945,7 @@ namespace AWS.CONTROL
 							Thread.Sleep(1000);
 							while (isLostRequest == true)
                             {
-                                if (nFailCnt >= 60)
+                                if (nFailCnt >= 5)
                                 {
                                     nFailCnt = 0;
 									break;
