@@ -360,18 +360,28 @@ namespace AWS.CONTROL
                     Directory.CreateDirectory(folderName);
 
                 string accessFile = AWSConfig.HOME_PATH + "\\AccessFile\\aws.mdb";
+				string monthAccessFile = AWSConfig.HOME_PATH + "\\AccessFile\\aws_month.mdb";
 
-                DateTime today = receiveDate;
+				DateTime today = receiveDate;
 
                 String todayAccessDBFile = folderName + @"\" + "aws_" + String.Format("{0:D4}", today.Year)
                     + String.Format("{0:D2}", today.Month) + String.Format("{0:D2}", today.Day) + ".mdb";
 
-                //오늘
-                if (!File.Exists(todayAccessDBFile))
+				String monthAccessDBFile = folderName + @"\..\" + "aws_" + String.Format("{0:D4}", today.Year)
+					+ String.Format("{0:D2}", today.Month) + ".mdb";
+
+				//오늘
+				if (!File.Exists(todayAccessDBFile))
                 {
                     System.IO.File.Copy(accessFile, todayAccessDBFile, true);
                 }
-            }
+
+				if (!File.Exists(monthAccessDBFile))
+				{
+					System.IO.File.Copy(monthAccessFile, monthAccessDBFile, true);
+					//AccessDBManager.GetInstance()
+				}
+			}
 
         }
 

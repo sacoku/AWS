@@ -47,7 +47,7 @@ namespace AWS.CONTROLS
             conn = null;
         }
 
-        public bool CreateDatabase(string fullFilename)
+        public bool CreateMinDatabase(string fullFilename)
         {
             bool succeeded = false;
             OleDbConnection conn = null;
@@ -76,38 +76,34 @@ namespace AWS.CONTROLS
                             conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fullFilename;
                             conn.Open();
                             connCmd.Connection = conn;
-                            //connCmd.CommandText = "CREATE TABLE aws_min(receivetime datetime PRIMARY KEY,temp Double,wd Double,ws Double,gust_wd Double,gust_ws Double,"
-                            //                         + "rain Double, press Double, israin Double,  humidity Double,heightofsurface Double, freezingofsurface Double, status Double, tempofsurface Double, "
-                            //                         + "freezingtempofsurface Double, snowofsurface Double, saltofsurface Double , frictionofsurface Double, statusofload Double, visibility Double, currentcode Double"
-                            //                         + ")";
 
-                            connCmd.CommandText = "CREATE TABLE AWS_MIN(										\n"
-                                                     + "                   DEV_IDX INT											\n"
+                            connCmd.CommandText = "CREATE TABLE AWS_MIN(											\n"
+                                                     + "                   DEV_IDX INT								\n"
                                                      + "                  ,RECEIVETIME DATETIME PRIMARY KEY			\n"
-													 + "                  ,ATMO DOUBLE											\n"
-													 + "                  ,MIN_ATMO DOUBLE									\n"
-													 + "                  ,MAX_ATMO DOUBLE									\n"
-													 + "                  ,TEMP DOUBLE											\n"
-                                                     + "                  ,MIN_TEMP DOUBLE									\n"
-                                                     + "                  ,MAX_TEMP DOUBLE									\n"
-                                                     + "                  ,WD DOUBLE											\n"
-                                                     + "                  ,MIN_WD DOUBLE										\n"
-                                                     + "                  ,MAX_WD DOUBLE										\n"
-                                                     + "                  ,WS DOUBLE												\n"
-                                                     + "                  ,MIN_WS DOUBLE										\n"
-                                                     + "                  ,MAX_WS DOUBLE										\n"
-                                                     + "                  ,RAIN DOUBLE											\n"
-                                                     + "                  ,ISRAIN DOUBLE										\n"
-                                                     + "                  ,HUMIDITY DOUBLE									\n"
-                                                     + "                  ,MIN_HUMIDITY DOUBLE								\n"
-                                                     + "                  ,MAX_HUMIDITY DOUBLE							\n"
-                                                     + "                  ,SUNSHINE DOUBLE									\n"
-                                                     + "                  ,VISIBILITY DOUBLE									\n"
+													 + "                  ,ATMO DOUBLE								\n"
+													 + "                  ,MIN_ATMO DOUBLE							\n"
+													 + "                  ,MAX_ATMO DOUBLE							\n"
+													 + "                  ,TEMP DOUBLE								\n"
+                                                     + "                  ,MIN_TEMP DOUBLE							\n"
+                                                     + "                  ,MAX_TEMP DOUBLE							\n"
+                                                     + "                  ,WD DOUBLE								\n"
+                                                     + "                  ,MIN_WD DOUBLE							\n"
+                                                     + "                  ,MAX_WD DOUBLE							\n"
+                                                     + "                  ,WS DOUBLE								\n"
+                                                     + "                  ,MIN_WS DOUBLE							\n"
+                                                     + "                  ,MAX_WS DOUBLE							\n"
+                                                     + "                  ,RAIN DOUBLE								\n"
+                                                     + "                  ,ISRAIN DOUBLE							\n"
+                                                     + "                  ,HUMIDITY DOUBLE							\n"
+                                                     + "                  ,MIN_HUMIDITY DOUBLE						\n"
+                                                     + "                  ,MAX_HUMIDITY DOUBLE						\n"
+                                                     + "                  ,SUNSHINE DOUBLE							\n"
+                                                     + "                  ,VISIBILITY DOUBLE						\n"
                                                      + ")";
                             iLog.Debug(connCmd.CommandText);
                             connCmd.ExecuteNonQuery();
 
-                            iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
+							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
                         }
                         catch (Exception ex)
                         {
@@ -128,7 +124,137 @@ namespace AWS.CONTROLS
             return succeeded;
         }
 
-        public double[] GetSensorMaxData()
+		public bool CreateMonthDatabase(string fullFilename)
+		{
+			bool succeeded = false;
+			OleDbConnection conn = null;
+
+			try
+			{
+				if (!File.Exists(fullFilename))
+				{
+					string newDB = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + fullFilename;
+					Type objClassType = Type.GetTypeFromProgID("ADOX.Catalog");
+					if (objClassType != null)
+					{
+						object obj = Activator.CreateInstance(objClassType);
+						// Create MDB file 
+						obj.GetType().InvokeMember("Create", System.Reflection.BindingFlags.InvokeMethod, null, obj,
+								  new object[] { "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + newDB + ";" });
+						succeeded = true;
+						// Clean up
+						System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+						obj = null;
+						try
+						{
+							conn = new OleDbConnection();
+							OleDbCommand connCmd = new OleDbCommand();
+
+							conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fullFilename;
+							conn.Open();
+							connCmd.Connection = conn;
+
+							connCmd.CommandText = "CREATE TABLE AWS_MONTH(											\n"
+													 + "                   AWS_DATE DATE PRIMARY KEY				\n"
+													 + "                  ,ATMO DOUBLE								\n"
+													 + "                  ,TEMP DOUBLE								\n"
+													 + "                  ,WD DOUBLE								\n"
+													 + "                  ,WS DOUBLE								\n"
+													 + "                  ,RAIN DOUBLE								\n"
+													 + "                  ,ISRAIN DOUBLE							\n"
+													 + "                  ,HUMIDITY DOUBLE							\n"
+													 + "                  ,SUNSHINE DOUBLE							\n"
+													 + "                  ,VISIBILITY DOUBLE						\n"
+													 + "                  ,CHG_TIME DATETIME						\n"
+													 + ")";
+							iLog.Debug(connCmd.CommandText);
+							connCmd.ExecuteNonQuery();
+
+							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
+						}
+						catch (Exception ex)
+						{
+							iLog.Error(ex.Message);
+						}
+						finally
+						{
+							conn.Close();
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				iLog.Error("Could not create database file: " + fullFilename + "\n\n" + ex.Message);
+			}
+
+			return succeeded;
+		}
+
+		public bool InsertMonthDatabase(string fullFilename)
+		{
+			bool succeeded = false;
+			OleDbConnection conn = null;
+
+			try
+			{
+				if (!File.Exists(fullFilename))
+				{
+					string newDB = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + fullFilename;
+					Type objClassType = Type.GetTypeFromProgID("ADOX.Catalog");
+					if (objClassType != null)
+					{
+						object obj = Activator.CreateInstance(objClassType);
+						// Create MDB file 
+						obj.GetType().InvokeMember("Create", System.Reflection.BindingFlags.InvokeMethod, null, obj,
+								  new object[] { "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + newDB + ";" });
+						succeeded = true;
+						// Clean up
+						System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+						obj = null;
+						try
+						{
+							conn = new OleDbConnection();
+							OleDbCommand connCmd = new OleDbCommand();
+
+							conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fullFilename;
+							conn.Open();
+							connCmd.Connection = conn;
+
+							DateTime CurrDateTime = DateTime.Now;
+							DateTime dt = new DateTime(CurrDateTime.Year, CurrDateTime.Month, 1, 0, 0, 0);
+
+							/*
+							for(int i=0;i<)
+							connCmd.CommandText = "INSERT INTO AWS_MONTH( AWS_DATE )					\n"
+												+ "VALUES('"++"')";
+
+	*/
+							iLog.Debug(connCmd.CommandText);
+							connCmd.ExecuteNonQuery();
+
+							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
+						}
+						catch (Exception ex)
+						{
+							iLog.Error(ex.Message);
+						}
+						finally
+						{
+							conn.Close();
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				iLog.Error("Could not create database file: " + fullFilename + "\n\n" + ex.Message);
+			}
+
+			return succeeded;
+		}
+
+		public double[] GetSensorMaxData()
         {
             double[] value = null;
             try

@@ -308,8 +308,9 @@ namespace AWS
             if (!Directory.Exists(folderName))
                 Directory.CreateDirectory(folderName);
 
-            AccessDBManager.GetInstance().CreateDatabase(folderName + @"\" +  "aws.mdb");
-        }
+            AccessDBManager.GetInstance().CreateMinDatabase(folderName + @"\" +  "aws.mdb");
+			AccessDBManager.GetInstance().CreateMonthDatabase(folderName + @"\" + "aws_month.mdb");
+		}
 
         private void makeDir()
         {

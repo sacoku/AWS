@@ -28,6 +28,12 @@ namespace AWS.VIEW
         static ILog iLog = log4net.LogManager.GetLogger("Logger");
         int columnNum = 17;
 
+		enum RPT_VIEW_MODE : int
+		{
+			DAILY_MODE =0,
+			MONTHLY_MODE
+		};
+
         public class ComboBoxItem
         {
             #region Fields
@@ -71,12 +77,12 @@ namespace AWS.VIEW
 
             ComboBoxItem[] item2 = new ComboBoxItem[3];
             item2[0] = new ComboBoxItem();
-            item2[0].Code = 0;
+            item2[0].Code = (int)RPT_VIEW_MODE.DAILY_MODE;
             item2[0].Name = "시간별 데이터";
             comboBox2.Items.Add(item2[0]);
             item2[1] = new ComboBoxItem();
-            item2[1].Code = 0;
-            item2[1].Name = "월별 데이터";
+            item2[1].Code = (int)RPT_VIEW_MODE.MONTHLY_MODE;
+			item2[1].Name = "월별 데이터";
             comboBox2.Items.Add(item2[1]);
 			comboBox2.SelectedIndex = 0;
 
