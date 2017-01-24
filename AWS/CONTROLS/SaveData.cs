@@ -85,7 +85,10 @@ namespace AWS.CONTROL
                 String todayAccessDBFile = folderName + "aws_" + String.Format("{0:D4}", DateTime.Now.Year) + String.Format("{0:D2}", DateTime.Now.Month)
                     + String.Format("{0:D2}", DateTime.Now.Day) + ".mdb";
 
-                this.checkAccessFile(receive);
+				String MonthAccessDBFile = folderName + @"..\" + "aws_" + String.Format("{0:D4}", DateTime.Now.Year) + String.Format("{0:D2}", DateTime.Now.Month)
+					+ ".mdb";
+
+				this.checkAccessFile(receive);
 
                 am = new AccessDBManager();
                 am.Connect(todayAccessDBFile);
@@ -96,6 +99,15 @@ namespace AWS.CONTROL
 
                 //데이터 저장
                 am.InsertSensorData(receive, dev_idx, kma2, min_value, max_value);
+				
+				double[] d = am.GetSensorAvgData();
+
+				if (d != null)
+				{
+					am.Close();
+					am.Connect(MonthAccessDBFile);
+					am.UpdateMonthData(receive, d);
+				}
 
                 om = new OracleDBManager();
                 om.Connect();
@@ -378,8 +390,25 @@ namespace AWS.CONTROL
 
 				if (!File.Exists(monthAccessDBFile))
 				{
+					iLog.Debug(monthAccessDBFile + "파일을 생성했습니다.");
 					System.IO.File.Copy(monthAccessFile, monthAccessDBFile, true);
-					//AccessDBManager.GetInstance()
+
+					AccessDBManager am = null;
+					try
+					{
+						am = new AccessDBManager();
+						am.Connect(monthAccessDBFile);
+						am.InsertMonthBaseData(monthAccessDBFile);
+					}
+					catch(Exception e)
+					{
+						iLog.Error(e.Message);
+						iLog.Error(e.StackTrace);
+					} finally
+					{
+						am.Close();
+					}
+					
 				}
 			}
 

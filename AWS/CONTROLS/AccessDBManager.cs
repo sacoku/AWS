@@ -161,7 +161,6 @@ namespace AWS.CONTROLS
 													 + "                  ,WD DOUBLE								\n"
 													 + "                  ,WS DOUBLE								\n"
 													 + "                  ,RAIN DOUBLE								\n"
-													 + "                  ,ISRAIN DOUBLE							\n"
 													 + "                  ,HUMIDITY DOUBLE							\n"
 													 + "                  ,SUNSHINE DOUBLE							\n"
 													 + "                  ,VISIBILITY DOUBLE						\n"
@@ -191,67 +190,34 @@ namespace AWS.CONTROLS
 			return succeeded;
 		}
 
-		public bool InsertMonthDatabase(string fullFilename)
+		public void InsertMonthBaseData(string fullFilename)
 		{
-			bool succeeded = false;
-			OleDbConnection conn = null;
-
 			try
 			{
-				if (!File.Exists(fullFilename))
+				if (conn == null) throw new Exception("접속되어 있지 않습니다.");
+
+				DateTime CurrDateTime = DateTime.Now;
+				DateTime dt = new DateTime(CurrDateTime.Year, CurrDateTime.Month, 1, 0, 0, 0);
+
+
+				while (CurrDateTime.Month == dt.Month)
 				{
-					string newDB = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + fullFilename;
-					Type objClassType = Type.GetTypeFromProgID("ADOX.Catalog");
-					if (objClassType != null)
-					{
-						object obj = Activator.CreateInstance(objClassType);
-						// Create MDB file 
-						obj.GetType().InvokeMember("Create", System.Reflection.BindingFlags.InvokeMethod, null, obj,
-								  new object[] { "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + newDB + ";" });
-						succeeded = true;
-						// Clean up
-						System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
-						obj = null;
-						try
-						{
-							conn = new OleDbConnection();
-							OleDbCommand connCmd = new OleDbCommand();
+					string sql = "INSERT INTO AWS_MONTH( AWS_DATE )					\n"
+							   + "VALUES('"+ dt.ToString("yyyy-MM-dd") +"')";
 
-							conn.ConnectionString = @"Provider=Microsoft.Jet.OLEDB.4.0; Data Source=" + fullFilename;
-							conn.Open();
-							connCmd.Connection = conn;
+					iLog.Debug("[QUERY]\n" + sql);
+					OleDbCommand cmd = new OleDbCommand(sql, conn);
+					//conn.Open();
+					cmd.ExecuteNonQuery();
 
-							DateTime CurrDateTime = DateTime.Now;
-							DateTime dt = new DateTime(CurrDateTime.Year, CurrDateTime.Month, 1, 0, 0, 0);
-
-							/*
-							for(int i=0;i<)
-							connCmd.CommandText = "INSERT INTO AWS_MONTH( AWS_DATE )					\n"
-												+ "VALUES('"++"')";
-
-	*/
-							iLog.Debug(connCmd.CommandText);
-							connCmd.ExecuteNonQuery();
-
-							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
-						}
-						catch (Exception ex)
-						{
-							iLog.Error(ex.Message);
-						}
-						finally
-						{
-							conn.Close();
-						}
-					}
+					dt = dt.AddDays(+1);
 				}
+
 			}
 			catch (Exception ex)
 			{
-				iLog.Error("Could not create database file: " + fullFilename + "\n\n" + ex.Message);
+				iLog.Error(ex.Message);
 			}
-
-			return succeeded;
 		}
 
 		public double[] GetSensorMaxData()
@@ -421,5 +387,99 @@ namespace AWS.CONTROLS
                 //conn.Close();
             }
         }
-    }
+
+		public double[] GetSensorAvgData()
+		{
+			double[] value = null;
+			try
+			{
+				if (conn == null) throw new Exception("접속되어 있지 않습니다.");
+
+				string sql = "SELECT										\n"
+							 + "         AVG(ATMO) AS AVG_ATMO				\n"
+							 + "        ,AVG(TEMP) AS AVG_TEMP				\n"
+							 + "        ,AVG(WS) AS AVG_WS					\n"
+							 + "        ,AVG(WD) AS AVG_WD					\n"
+							 + "        ,AVG(RAIN) AS AVG_RAIN				\n"
+							 + "        ,AVG(HUMIDITY) AS AVG_HUMIDITY		\n"
+							 + "        ,AVG(SUNSHINE) AS AVG_SUNSHINE		\n"
+							+ "         ,AVG(VISIBILITY) AS AVG_VISIBILITY	\n"
+							 + "FROM AWS_MIN								  ";
+
+				iLog.Debug("[QUERY]\n" + sql);
+
+				OleDbCommand cmd = new OleDbCommand(sql, conn);
+				OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
+				DataSet readDataSet = new DataSet();
+
+				//conn.Open();
+				myDataAdapter.Fill(readDataSet, "aws_min");
+				if (readDataSet.Tables[0].Rows.Count > 0)
+				{
+					DataRow row = readDataSet.Tables[0].Rows[0];
+					iLog.Debug("rows : " + row.ItemArray.Length);
+					value = new double[row.ItemArray.Length];
+					for (int i = 0; i < row.ItemArray.Length; i++)
+					{
+						value[i] = (row.ItemArray.GetValue(i).ToString() == "" ? 0 : double.Parse(row.ItemArray.GetValue(i).ToString()));
+					}
+				}
+
+				return value;
+			}
+			catch (Exception e)
+			{
+				iLog.Error(e.Message);
+				iLog.Error(e.StackTrace);
+				throw e;
+			}
+			finally
+			{
+				//conn.Close();
+			}
+		}
+
+		public void UpdateMonthData(DateTime dt, double[] values)
+		{
+			try
+			{
+				if (conn == null) throw new Exception("접속되어 있지 않습니다.");
+
+				string sql = 
+							string.Format("UPDATE AWS_MONTH SET						\n" +
+										  "         ATMO = {0:0}	  				\n" +
+										  "        ,TEMP = {1:F1}					\n" +
+										  "        ,WD = {2}						\n" +
+										  "        ,WS = {3}						\n" +
+										  "        ,RAIN = {4}						\n" +
+									  	  "        ,HUMIDITY = {5:0}				\n" +
+										  "        ,SUNSHINE = {6:0.0}				\n" +
+										  "        ,VISIBILITY = {7}				\n" +
+										  "WHERE AWS_DATE = #{8}#					  ",
+							values[0],
+							values[1],
+							values[2],
+							values[3],
+							values[4],
+							values[5],
+							values[6],
+							values[7],
+							dt.ToString("yyyy-MM-dd"));
+				iLog.Debug("[QUERY]\n" + sql);
+
+				OleDbCommand cmd = new OleDbCommand(sql, conn);
+				//conn.Open();
+				cmd.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				iLog.Error(e.Message);
+				iLog.Error(e.StackTrace);
+			}
+			finally
+			{
+				//conn.Close();
+			}
+		}
+	}
 }

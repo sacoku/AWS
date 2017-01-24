@@ -46,6 +46,8 @@ namespace AWS
 			}
 			catch (Exception e)
             {
+				iLog.Error(e.Message);
+				iLog.Error(e.StackTrace);
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
