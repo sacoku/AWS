@@ -86,7 +86,7 @@ namespace AWS.VIEW
             item2[1].Code = (int)RPT_VIEW_MODE.MONTHLY_MODE;
 			item2[1].Name = "월별 데이터";
             comboBox2.Items.Add(item2[1]);
-			comboBox2.SelectedIndex = 0;
+			comboBox2.SelectedIndex = 1;
 
 			initGrid(DateTime.Now, 0);
 			maskedTextBox1.Text = "00:00";
@@ -816,16 +816,15 @@ namespace AWS.VIEW
 
             PrintPreviewDialog dlg = new PrintPreviewDialog();
             SourceGrid.Exporter.GridPrintDocument pd = new SourceGrid.Exporter.GridPrintDocument(this.SensortsReportGrid);
-
-			iLog.Debug("Rows : " + this.SensortsReportGrid.Rows.Count);
-            pd.RangeToPrint = new SourceGrid.Range(0, 0, this.SensortsReportGrid.Rows.Count - 1, this.SensortsReportGrid.Columns.Count - 1);
+			
+			pd.RangeToPrint = new SourceGrid.Range(0, 0, this.SensortsReportGrid.Rows.Count - 1, this.SensortsReportGrid.Columns.Count - 1);
 
             pd.DefaultPageSettings.Margins.Left = 50;
             pd.DefaultPageSettings.Margins.Right = 50;
             pd.DefaultPageSettings.Margins.Top = 20;
             pd.DefaultPageSettings.Margins.Bottom = 20;
             pd.DefaultPageSettings.Landscape = true;
-			
+
 			pd.PageFooterText = "\tPage [PageNo] from [PageCount]";
             dlg.Document = pd;
 			((Form)dlg).StartPosition = FormStartPosition.CenterParent;
