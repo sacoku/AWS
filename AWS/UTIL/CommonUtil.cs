@@ -183,5 +183,19 @@ namespace AWS.UTIL
             System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
             return encoding.GetBytes(str);
         }
-    }
+
+		/// <summary>
+		/// CheckSumCheck 생성
+		/// </summary>
+		public static void CreateCheckSum(byte[] data, int HeaderSize, int TailSize)
+		{
+			data[data.Length - TailSize - 2] = 0;   // Xor
+			data[data.Length - TailSize - 1] = 0;   // Add
+			for (int i = 0 + HeaderSize; i < data.Length - TailSize - 2; i++)
+			{
+				data[data.Length - TailSize - 2] ^= data[i];
+				data[data.Length - TailSize - 1] += data[i];
+			}
+		}
+	}
 }

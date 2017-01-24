@@ -21,9 +21,10 @@ namespace AWS
         public DisplayForm displayForm = null;
         public ReportForm reportForm = null;
         public DataLogger[] logger = null;
+		public DataLogger[] rLogger = null;
 
-        //데이타를 수집하기 위한 스레드 객체
-        public Thread makeThread = null;
+		//데이타를 수집하기 위한 스레드 객체
+		public Thread makeThread = null;
         private bool isFlag = true;
         public System.DateTime m_MakeFileDate;
         ILog iLog = log4net.LogManager.GetLogger("Logger");
@@ -102,10 +103,19 @@ namespace AWS
 				//add by sacoku
 				loggerCnt = AWS.Config.AWSConfig.sCount;
 				logger = new DataLogger[loggerCnt];
+				rLogger = new DataLogger[loggerCnt];
 				for (int i = 0; i < loggerCnt; i++)
 				{
 					if (AWS.Config.AWSConfig.sValue[i].enable)
-						logger[i] = new DataLogger(this, i);
+					{
+						Object lockObj = new object();
+						logger[i] = new DataLogger(this, i, false, lockObj);
+						if(AWSConfig.IS_REALTIME_RECOVERY)
+						{
+							rLogger[i] = new DataLogger(this, i, true, lockObj);
+						}
+					}
+
 				}
 
 				iLog.Info("Program Start");
@@ -247,7 +257,10 @@ namespace AWS
                 {
                     if(logger[i] != null)
                         logger[i].CloseLogger();
-                }
+
+					if (AWSConfig.IS_REALTIME_RECOVERY && rLogger[i] != null)
+						rLogger[i].CloseLogger();
+				}
             }
 
             isFlag = false;
@@ -274,8 +287,15 @@ namespace AWS
 
             for (int i = 0; i < loggerCnt; i++)
             {
-                if (AWS.Config.AWSConfig.sValue[i].enable)
-                    this.logger[i] = new DataLogger(this,i);
+				if (AWS.Config.AWSConfig.sValue[i].enable)
+				{
+					Object lockObj = new object();
+					this.logger[i] = new DataLogger(this, i, true, lockObj);
+					if (AWSConfig.IS_REALTIME_RECOVERY)
+					{
+						rLogger[i] = new DataLogger(this, i, true, lockObj);
+					}
+				}
             }
            
         }

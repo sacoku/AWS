@@ -45,9 +45,6 @@ namespace AWS.CONTROL
 
         private AsynchronousSocket ClientSocket = null;
         private Socket client = null;
-        private IPEndPoint remoteEP = null;
-        private IPHostEntry ipHostInfo = null;
-        private Boolean bRealTimeRecovery = false;
 
         //데이타를 수집하기 위한 스레드 객체
         public Thread CollectThread = null;
@@ -55,15 +52,13 @@ namespace AWS.CONTROL
         int iPanelIdx = -1;
         int iRetryConnCnt = 0;
         Boolean isPause = false;
-        Boolean isCurrRequest = false;
         Boolean isLostRequest = false;
-        Boolean bWatchdogIsRun = true;
 		Boolean bIsReadyToRun = false;
         Thread thWatchDog = null;
 
-        private object lockObject = new object();
+        private object lockObject = null;
 
-        public DataLogger(MainForm main, int idx)
+        public DataLogger(MainForm main, int idx, Boolean isRecovery, object lockObj)
         {
             this.mainForm = main;
             this.environment = new DataLoggerEnvironment();
@@ -71,26 +66,21 @@ namespace AWS.CONTROL
             this.protocol = new Protocol();
             this.saveData = new SaveData();
 
-            protocol.AddProtocolItem(Marshal.SizeOf(typeof(KMAAnswer2)), true, new CheckFunction(HeaderTailCheck2), new CatchFunction(AnswerProtocolCatch2));	// 응답 프로토콜
+			lockObject = lockObj;
+
+
+			protocol.AddProtocolItem(Marshal.SizeOf(typeof(KMAAnswer2)), true, new CheckFunction(HeaderTailCheck2), new CatchFunction(AnswerProtocolCatch2));	// 응답 프로토콜
             //로거 상태
             protocol.AddProtocolItem(Marshal.SizeOf(typeof(LoggerVersionInfo)), true, new CheckFunction(KMALoggerInfoHeaderTailCheck), new CatchFunction(KMALoggerInfoHeaderTailCatch));	// 응답 프로토콜
           
             protocol.AddProtocolItem(Marshal.SizeOf(typeof(KMA2)), true, new CheckFunction(KMA2HeaderTailCheck), new CatchFunction(KMA2Catch)); // WeatherProtocol
-
-			//remove by sacoku
-            //environment.IP = Properties.Settings.Default.IP.ToString();
-            //environment.PORT = int.Parse(Properties.Settings.Default.PORT.ToString());
-            //environment.LoggerID = ushort.Parse(Properties.Settings.Default.LOGGERID.ToString());
-            //environment.PASSWORD = Properties.Settings.Default.PASSWORD.ToString();
 
             environment.IP = AWS.Config.AWSConfig.sValue[idx].Ip;
             environment.PORT = AWS.Config.AWSConfig.sValue[idx].Port;
             environment.LoggerID = AWS.Config.AWSConfig.sValue[idx].Id;
             environment.PASSWORD = AWS.Config.AWSConfig.sValue[idx].Passwd;
 
-            bRealTimeRecovery = AWSConfig.IS_REALTIME_RECOVERY;
-
-            this.iPanelIdx = idx;
+			this.iPanelIdx = idx;
             try
             {
                 IPAddress ipAddress = IPAddress.Parse(environment.IP);
@@ -123,10 +113,18 @@ namespace AWS.CONTROL
             m_DateTimeCommandDt = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, 0, 30);          // 각시간당 20초에 시간 설정 명령을 보내기 위해서 설정
 
             try
-            {	
-				CollectThread = new Thread(new ThreadStart(StartCollect));
-                CollectThread.Name = "collectDataForOWI";
-                CollectThread.Start();
+            {
+				if (!isRecovery)
+				{
+					CollectThread = new Thread(new ThreadStart(StartCollect));
+					CollectThread.Name = "collectDataForOWI";
+					CollectThread.Start();
+				} else
+				{
+					CollectThread = new Thread(new ThreadStart(StartWatchDog));
+					CollectThread.Name = "WatchDogThread";
+					CollectThread.Start();
+				}
             }
             catch (Exception E)
             {
@@ -142,11 +140,13 @@ namespace AWS.CONTROL
 			try
 			{
 				//add by sacoku - 실시간 데이터 복구 모드 추가
+				/*
 				if (bRealTimeRecovery)
 				{
 					iLog.Info("복구 모드가 실시간으로 동작합니다.");
 					StartWatchDog();
 				}
+				*/
 			}
 			catch(Exception e)
 			{
@@ -182,11 +182,6 @@ namespace AWS.CONTROL
             ClientSocket.Received += new ReceiveDelegate(OnReceived);
 
             iRetryConnCnt++;
-        }
-
-        private void makeReportFile()
-        {
-
         }
 
         public byte[] StrToByteArray(string str)
@@ -290,11 +285,6 @@ namespace AWS.CONTROL
                 }
                 Thread.Sleep(AWS.Config.AWSConfig.CDP * 1000);
             }
-        }
-
-        public DateTime GetNowDateTimeSecZero()
-        {
-            return new System.DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
         }
 
         private void OnReceived(object sender, ReceivedEventArgs e)
@@ -459,7 +449,6 @@ namespace AWS.CONTROL
             {
                 lock (lockObject)
                 {
-
                     KMACommand2 protocolCommand = new KMACommand2();
                     protocolCommand.Header[0] = 0xFA;
                     protocolCommand.Header[1] = 0xFB;
@@ -551,21 +540,6 @@ namespace AWS.CONTROL
                     reConnect();
             }
         }
-
-        /// <summary>
-        /// CheckSumCheck 생성
-        /// </summary>
-        public void CreateCheckSum(byte[] data, int HeaderSize, int TailSize)
-        {
-            data[data.Length - TailSize - 2] = 0;	// Xor
-            data[data.Length - TailSize - 1] = 0;	// Add
-            for (int i = 0 + HeaderSize; i < data.Length - TailSize - 2; i++)
-            {
-                data[data.Length - TailSize - 2] ^= data[i];
-                data[data.Length - TailSize - 1] += data[i];
-            }
-        } 
-
 
         public bool KMALoggerInfoHeaderTailCheck(object sender, CircleQueue queue)
         {
@@ -711,9 +685,8 @@ namespace AWS.CONTROL
         public void CloseLogger()
         {
             this.flag = false;
-            bWatchdogIsRun = false;
-            if(thWatchDog != null) thWatchDog.Abort();
-            if (this.ClientSocket != null)
+			CollectThread.Abort();
+			if (this.ClientSocket != null)
                 this.ClientSocket.Close();
         }     
     
@@ -752,7 +725,6 @@ namespace AWS.CONTROL
                     && (receive.Hour == DateTime.Now.Hour) 
 					&& (receive.Minute == DateTime.Now.Minute) )
 				{
-					isCurrRequest = false;
 					this.mainForm.setTXRX(0);
                     this.m_CollectDt += new TimeSpan(0, 0, 1, 0, 0);
                     String[] dispalyData = new String[2];
@@ -849,23 +821,37 @@ namespace AWS.CONTROL
 
         public void StartWatchDog()
         {
-            bWatchdogIsRun = true;
 
-			thWatchDog = new Thread((idx) => 
-            {
-                while (bWatchdogIsRun)
-                {
-					if (bIsReadyToRun)
+			Thread.Sleep(5000); //Delay를 주고 시작한다.
+
+			while (flag)
+			{
+				//add by sacoku 161227
+				if (!ClientSocket.Connected())
+				{
+					if (iRetryConnCnt > 5)
 					{
-						DateTime currentTime = DateTime.Now;
-						RecoverLostData(currentTime, false);
+						iLog.Error("재접속 횟수가 10회를 초과하여 접속 시도를 종료합니다.");
+						this.CloseLogger();
+						return;
 					}
-                    Thread.Sleep(AWSConfig.SCAN_DELAY);
-                }
-            });
 
-			thWatchDog.Start();
-        }
+					reConnect();
+					Thread.Sleep(5000);
+					continue;
+				}
+
+				bIsReadyToRun = true;
+				if (bIsReadyToRun)
+				{
+					DateTime currentTime = DateTime.Now;
+					RecoverLostData(currentTime, false);
+				}
+
+				Thread.Sleep(AWSConfig.SCAN_DELAY * 1000);
+
+			}
+		}
 
         public void RecoverLostData(DateTime dt, Boolean isPauseMode)
         {
@@ -887,7 +873,6 @@ namespace AWS.CONTROL
                     return;
                 }
 
-                iLog.Info("Watchdog을 수행합니다.");
                 DataSet readDataSet = new DataSet();
 
 				StringBuilder selectQuery = new StringBuilder()
@@ -921,9 +906,9 @@ namespace AWS.CONTROL
 
                     if(isPauseMode) Pause();
 
-                    for (int rows = 0; rows < (ts.TotalMinutes + 1); rows++)
+                    for (int rows = 0; rows < (ts.TotalMinutes + 1);)
                     {
-						if (bWatchdogIsRun == false) break;
+						if (this.flag == false) break;
                         DataRow[] result = readDataSet.Tables[0].Select("receivetime = '" + startDateTime + "'");
 
                         if (result == null || result.Length <= 0)
@@ -963,6 +948,7 @@ namespace AWS.CONTROL
 							lostCnt++;
 
 							iLog.Debug("응답을 받았으며 다음 데이터를 요청합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
+							rows++;
 						} else
 						{
 							iLog.Debug("응답을 받지 못해서 재요청 합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
