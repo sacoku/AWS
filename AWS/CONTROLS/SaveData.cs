@@ -18,11 +18,18 @@ using AWS.CONTROLS;
 namespace AWS.CONTROL
 {
     class SaveData
-    {        
+    {
+		private int dev_idx = 0;
         public KMA2 kma2 = null;
         public KMA2 lastKma2 = null;
 
-        static ILog iLog = log4net.LogManager.GetLogger("Logger");
+		ILog iLog = null;  
+
+		public SaveData(int dev_idx)
+		{
+			this.dev_idx = dev_idx;
+			iLog = log4net.LogManager.GetLogger("Dev" + dev_idx);
+		}
 
         public void SaveWeatherData()
         {
@@ -90,7 +97,7 @@ namespace AWS.CONTROL
 
 				this.checkAccessFile(receive);
 
-                am = new AccessDBManager();
+                am = new AccessDBManager(this.dev_idx);
                 am.Connect(todayAccessDBFile);
 
                 //최소/최대 값을 읽어옴...
@@ -109,7 +116,7 @@ namespace AWS.CONTROL
 					am.UpdateMonthData(receive, d);
 				}
 
-                om = new OracleDBManager();
+                om = new OracleDBManager(dev_idx);
                 om.Connect();
 				om.InsertAwsStampData(dev_idx, receive, kma2, min_value, max_value);
 				om.UpdateLastTimeCall(receive, AWSConfig.sValue[dev_idx].LocNum);
@@ -255,7 +262,7 @@ namespace AWS.CONTROL
 
                 this.checkAccessFile(receive);
 
-                am = new AccessDBManager();
+                am = new AccessDBManager(dev_idx);
                 am.Connect(todayAccessDBFile);
 
                 //최소/최대 값을 읽어옴...
@@ -265,7 +272,7 @@ namespace AWS.CONTROL
                 //데이터 저장
                 am.InsertSensorData(receive, (int)o, lastKma2, min_value, max_value);
 
-                om = new OracleDBManager();
+                om = new OracleDBManager(dev_idx);
                 om.Connect();
                 om.InsertAwsStampData((int)o, receive, lastKma2, min_value, max_value);
                 //om.UpdateLastTimeCall(receive, AWSConfig.sValue[(int)o].LocNum);
@@ -396,7 +403,7 @@ namespace AWS.CONTROL
 					AccessDBManager am = null;
 					try
 					{
-						am = new AccessDBManager();
+						am = new AccessDBManager(dev_idx);
 						am.Connect(monthAccessDBFile);
 						am.InsertMonthBaseData(monthAccessDBFile);
 					}

@@ -18,11 +18,19 @@ namespace AWS.CONTROLS
         private static OracleDBManager _INSTANCE = null;
         private OracleConnection conn = null;
 
-        ILog iLog = log4net.LogManager.GetLogger("Logger");
+		ILog iLog = null;
 
-        public OracleDBManager() {; }
+        public OracleDBManager(int dev_idx)
+		{
+			iLog = log4net.LogManager.GetLogger("Dev" + dev_idx);
+		}
 
-        public static OracleDBManager GetInstance()
+		public OracleDBManager()
+		{
+			iLog = log4net.LogManager.GetLogger("Logger");
+		}
+
+		public static OracleDBManager GetInstance()
         {
             if (_INSTANCE == null)
                 _INSTANCE = new OracleDBManager();

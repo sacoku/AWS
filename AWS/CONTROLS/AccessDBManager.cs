@@ -16,10 +16,19 @@ namespace AWS.CONTROLS
         private static AccessDBManager _INSTANCE = null;
 
         private OleDbConnection conn = null;
-        static ILog iLog = log4net.LogManager.GetLogger("Logger");
+		ILog iLog = null;  
 
-        public AccessDBManager() {; }
-        public static AccessDBManager GetInstance()
+        public AccessDBManager(int dev_idx)
+		{
+			iLog = log4net.LogManager.GetLogger("Dev" + dev_idx);
+		}
+
+		public AccessDBManager()
+		{
+			iLog = log4net.LogManager.GetLogger("Logger");
+		}
+
+		public static AccessDBManager GetInstance()
         {
             if (_INSTANCE == null)
                 _INSTANCE = new AccessDBManager();

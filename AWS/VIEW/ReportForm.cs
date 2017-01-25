@@ -30,8 +30,9 @@ namespace AWS.VIEW
 
 		enum RPT_VIEW_MODE : int
 		{
-			DAILY_MODE =0,
-			MONTHLY_MODE =1
+			TIME_MODE =0,
+			DAILY_MODE =1,
+			MONTHLY_MODE =2
 		};
 
 		int eMode = (int)RPT_VIEW_MODE.DAILY_MODE;
@@ -79,13 +80,17 @@ namespace AWS.VIEW
 
             ComboBoxItem[] item2 = new ComboBoxItem[3];
             item2[0] = new ComboBoxItem();
-            item2[0].Code = (int)RPT_VIEW_MODE.DAILY_MODE;
-            item2[0].Name = "시간별 데이터";
+            item2[0].Code = (int)RPT_VIEW_MODE.TIME_MODE;
+            item2[0].Name = "정시 수집별 관측자료";
             comboBox2.Items.Add(item2[0]);
-            item2[1] = new ComboBoxItem();
-            item2[1].Code = (int)RPT_VIEW_MODE.MONTHLY_MODE;
-			item2[1].Name = "월별 데이터";
-            comboBox2.Items.Add(item2[1]);
+			item2[1] = new ComboBoxItem();
+			item2[1].Code = (int)RPT_VIEW_MODE.DAILY_MODE;
+			item2[1].Name = "수집 시간별 관측자료";
+			comboBox2.Items.Add(item2[1]);
+			item2[2] = new ComboBoxItem();
+            item2[2].Code = (int)RPT_VIEW_MODE.MONTHLY_MODE;
+			item2[2].Name = "일별 통계 자료";
+            comboBox2.Items.Add(item2[2]);
 			comboBox2.SelectedIndex = 0;
 
 			initGrid(DateTime.Now, 0);
@@ -95,11 +100,15 @@ namespace AWS.VIEW
 
 		private void initGrid(DateTime date, int dev_id)
 		{
-			if (eMode == 0)
+			if (eMode == (int)RPT_VIEW_MODE.TIME_MODE)
+			{
+				initTimeGrid(date, dev_id);
+			}
+			else if (eMode == (int)RPT_VIEW_MODE.DAILY_MODE)
 			{
 				initDayGrid(date, dev_id);
 			}
-			else
+			else if (eMode == (int)RPT_VIEW_MODE.MONTHLY_MODE)
 			{
 				initMonthGrid(date, dev_id);
 			}
@@ -110,7 +119,7 @@ namespace AWS.VIEW
          * Date : 2016-12-29
          * Writer : 김성현(sacoku)
          */
-        private void initDayGrid(DateTime date, int dev_idx)
+        private void initTimeGrid(DateTime date, int dev_idx)
         {
             try
             {
@@ -152,7 +161,7 @@ namespace AWS.VIEW
 
                 //1 Header Row
                 SensortsReportGrid[0, 0] = new MyHeader(" " + AWS.Config.AWSConfig.sValue[dev_idx].Name 
-                                         + " 수집 시간별 관측자료 ( " + date.ToString("yyyy년 MM월 dd일") + "  00:00:00 ~ 23:59:59 )");
+                                         + " 정시 수집별 관측자료 ( " + date.ToString("yyyy년 MM월 dd일") + "  00:00:00 ~ 23:59:59 )");
                 SensortsReportGrid[0, 0].ColumnSpan = columnNum;
                 SensortsReportGrid[0, 0].View = viewColumnHeader;
                 SensortsReportGrid[0, 0].View.Font = new Font("굴림", 8, FontStyle.Bold);
@@ -309,6 +318,140 @@ namespace AWS.VIEW
             }
         }
 
+		private void initDayGrid(DateTime date, int dev_idx)
+		{
+			try
+			{
+				int colWidth = 30;
+				columnNum = 8;
+
+				SensortsReportGrid.RowsCount = 0;
+				this.SensortsReportGrid.Refresh();
+				SensortsReportGrid.RowsCount = 2;
+				//Create the grid
+				SensortsReportGrid.BorderStyle = BorderStyle.FixedSingle;
+
+				SensortsReportGrid.ColumnsCount = columnNum;
+				SensortsReportGrid.FixedRows = 2;
+
+				//Border
+				DevAge.Drawing.BorderLine border = new DevAge.Drawing.BorderLine(Color.DarkGray, 1);
+				DevAge.Drawing.RectangleBorder cellBorder = new DevAge.Drawing.RectangleBorder(border, border);
+
+				//ColumnHeader view
+				SourceGrid.Cells.Views.ColumnHeader viewColumnHeader = new SourceGrid.Cells.Views.ColumnHeader();
+				DevAge.Drawing.VisualElements.ColumnHeader backHeader = new DevAge.Drawing.VisualElements.ColumnHeader();
+				backHeader.BackColor = Color.LightGray;
+				backHeader.Border = cellBorder;
+				viewColumnHeader.Background = backHeader;
+				viewColumnHeader.ForeColor = Color.Black;
+				viewColumnHeader.Font = new Font("굴림", 8, FontStyle.Bold);
+
+				//Views
+				CellBackColorAlternate viewNormal = new CellBackColorAlternate(Color.LightGray, Color.Gray);
+				viewNormal.Border = cellBorder;
+				CheckBoxBackColorAlternate viewCheckBox = new CheckBoxBackColorAlternate(Color.Khaki, Color.DarkKhaki);
+				viewCheckBox.Border = cellBorder;
+
+				//Editors
+				SourceGrid.Cells.Editors.TextBox editorString = new SourceGrid.Cells.Editors.TextBox(typeof(string));
+				SourceGrid.Cells.Editors.TextBoxUITypeEditor editorDateTime = new SourceGrid.Cells.Editors.TextBoxUITypeEditor(typeof(DateTime));
+
+				//1 Header Row
+				SensortsReportGrid[0, 0] = new MyHeader(" " + AWS.Config.AWSConfig.sValue[dev_idx].Name
+										 + " 수집 시간별 관측자료 ( " + date.ToString("yyyy년 MM월") + ")");
+				SensortsReportGrid[0, 0].ColumnSpan = columnNum;
+				SensortsReportGrid[0, 0].View = viewColumnHeader;
+				SensortsReportGrid[0, 0].View.Font = new Font("굴림", 8, FontStyle.Bold);
+				SensortsReportGrid[0, 0].View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+
+				SourceGrid.Cells.ColumnHeader columnHeader;
+
+				columnHeader = new SourceGrid.Cells.ColumnHeader("시간");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+				SensortsReportGrid[1, 0] = columnHeader;
+				SensortsReportGrid[1, 0].Column.Width = colWidth * 3;
+
+				int idx = 1;
+				columnHeader = new SourceGrid.Cells.ColumnHeader("기온");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+				SensortsReportGrid[1, idx] = columnHeader;
+				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
+				idx += 1;
+
+				columnHeader = new SourceGrid.Cells.ColumnHeader("풍향");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+				SensortsReportGrid[1, idx] = columnHeader;
+				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
+				idx += 1;
+
+				columnHeader = new SourceGrid.Cells.ColumnHeader("풍속");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+				SensortsReportGrid[1, idx] = columnHeader;
+				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
+				idx += 1;
+
+				columnHeader = new SourceGrid.Cells.ColumnHeader("강우");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+				SensortsReportGrid[1, idx] = columnHeader;
+				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
+				idx += 1;
+
+				columnHeader = new SourceGrid.Cells.ColumnHeader("습도");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+				SensortsReportGrid[1, idx] = columnHeader;
+				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
+				idx += 1;
+
+
+				columnHeader = new SourceGrid.Cells.ColumnHeader("일조");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+				SensortsReportGrid[1, idx] = columnHeader;
+				SensortsReportGrid[1, idx].Column.Width = colWidth * 3; //665 
+				idx += 1;
+
+
+				columnHeader = new SourceGrid.Cells.ColumnHeader("시정");
+				columnHeader.View = viewColumnHeader;
+				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
+				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+
+				SensortsReportGrid[1, idx] = columnHeader;
+				SensortsReportGrid[1, idx].Column.Width = colWidth * 3; //665 
+				idx += 1;
+				columnNum = idx;
+
+				//SensortsReportGrid.AutoSizeCells();
+				//SensortsReportGrid.AutoStretchColumnsToFitWidth = true;
+				//SensortsReportGrid.Columns.StretchToFit();
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.Message);
+			}
+		}
+
 		private void initMonthGrid(DateTime date, int dev_idx)
 		{
 			try
@@ -350,7 +493,7 @@ namespace AWS.VIEW
 
 				//1 Header Row
 				SensortsReportGrid[0, 0] = new MyHeader(" " + AWS.Config.AWSConfig.sValue[dev_idx].Name
-										 + " 일별 관측자료 ( " + date.ToString("yyyy년 MM월") + ")");
+										 + " 일별 통계 자료 ( " + date.ToString("yyyy년 MM월") + ")");
 				SensortsReportGrid[0, 0].ColumnSpan = columnNum;
 				SensortsReportGrid[0, 0].View = viewColumnHeader;
 				SensortsReportGrid[0, 0].View.Font = new Font("굴림", 8, FontStyle.Bold);
@@ -546,20 +689,25 @@ namespace AWS.VIEW
 		private void readData(DateTime dateTime, int dev_idx)
 		{
 			Boolean ret = false;
-			if (eMode == 0)
+			
+			if (eMode == (int)RPT_VIEW_MODE.TIME_MODE)
 			{
-				ret = readDataDay(dateTime, dev_idx);
+				ret = readTimeData(dateTime, dev_idx);
 			}
-			else
+			else if (eMode == (int)RPT_VIEW_MODE.DAILY_MODE)
 			{
-				ret = readDataMonth(dateTime, dev_idx);
+				ret = readDayData(dateTime, dev_idx);
+			}
+			else if (eMode == (int)RPT_VIEW_MODE.MONTHLY_MODE)
+			{
+				ret = readMonthData(dateTime, dev_idx);
 			}
 
-			if(ret) MessageBox.Show("데이터 로드가 완료 되었습니다.");
+			if (ret) MessageBox.Show("데이터 로드가 완료 되었습니다.");
 		}
 
 
-		private Boolean readDataDay(DateTime dateTime, int dev_idx)
+		private Boolean readTimeData(DateTime dateTime, int dev_idx)
         {
             OleDbConnection con = null;
             OleDbCommand cmd = null;
@@ -692,7 +840,126 @@ namespace AWS.VIEW
 			return true;
 		}
 
-		private Boolean readDataMonth(DateTime dateTime, int dev_idx)
+		private Boolean readDayData(DateTime dateTime, int dev_idx)
+		{
+			OleDbConnection con = null;
+			OleDbCommand cmd = null;
+
+			String fileName = String.Format("{0:yyyyMM}", dateTime);
+
+			String year = String.Format("{0:yyyy}", dateTime);
+			String month = String.Format("{0:MM}", dateTime);
+			String day = String.Format("{0:dd}", dateTime);
+
+			string DBPath = AWSConfig.HOME_PATH + "\\AWSDATA\\" + AWS.Config.AWSConfig.sValue[(int)dev_idx].Name + "\\" + year + @"\" + @"\aws_" + fileName + ".mdb";
+
+			if (!File.Exists(DBPath))
+			{
+				MessageBox.Show("Date file isn't exist!");
+				return false;
+			}
+
+			DataSet readDataSet = new DataSet();
+
+			try
+			{
+				StringBuilder selectQuery = new StringBuilder()
+								.Append("SELECT								\n")
+								.Append("   AWS_DATE						\n")
+								.Append("  ,TEMP							\n")
+								.Append("  ,WD								\n")
+								.Append("  ,WS								\n")
+								.Append("  ,RAIN							\n")
+								.Append("  ,HUMIDITY						\n")
+								.Append("  ,SUNSHINE						\n")
+								.Append("  ,VISIBILITY						\n")
+								.Append("FROM AWS_MONTH						\n");
+
+				iLog.Debug("[QUERY] \n" + selectQuery);
+				con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + DBPath);
+				cmd = new OleDbCommand(selectQuery.ToString(), con);
+				OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
+
+				con.Open();
+				myDataAdapter.Fill(readDataSet, "aws_month");
+
+				if (readDataSet.Tables[0].Rows.Count > 0)
+				{
+					this.initGrid(dateTime, dev_idx);
+
+					DateTime readDateTime = new DateTime(dateTime.Year, dateTime.Month, 1, 0, 0, 0);
+					DateTime dt = new DateTime(dateTime.Year, dateTime.Month, 1, 0, 0, 0);
+
+					SensortsReportGrid.RowsCount = 2 + readDataSet.Tables[0].Rows.Count;
+					int rows = 2;
+					while (readDateTime.Month == dt.Month)
+					{
+						DataRow[] result = readDataSet.Tables[0].Select("aws_date = '" + dt.ToString("yyyy-MM-dd") + "'");
+
+						SourceGrid.Cells.Views.Cell yellowView = new SourceGrid.Cells.Views.Cell();
+						yellowView.BackColor = Color.Gray;
+						yellowView.ForeColor = Color.White;
+
+						if (result == null || result[0][1].ToString() == "")
+						{
+							SourceGrid.Cells.Cell l_Cell = new SourceGrid.Cells.Cell(dt.ToString("yyyy-MM-dd"), typeof(string));
+							l_Cell.View = yellowView;
+
+							SensortsReportGrid[rows, 0] = l_Cell;
+							SensortsReportGrid[rows, 0].View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+							SensortsReportGrid[rows, 0].View.Font = new Font("굴림", 7, FontStyle.Regular);
+
+							for (int i = 1; i < columnNum; i++)
+							{
+								SourceGrid.Cells.Cell Cell = new SourceGrid.Cells.Cell("");
+								Cell.View = yellowView;
+
+								SensortsReportGrid[rows, i] = new SourceGrid.Cells.Cell(" ", typeof(string));
+								SensortsReportGrid[rows, i] = Cell;
+							}
+						}
+						else
+						{
+							SensortsReportGrid[rows, 0] = new SourceGrid.Cells.Cell(dt.ToString("yyyy-MM-dd"), typeof(string));
+							SensortsReportGrid[rows, 0].View.BackColor = Color.White;
+							SensortsReportGrid[rows, 0].View.ForeColor = Color.Black;
+							SensortsReportGrid[rows, 0].View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
+							SensortsReportGrid[rows, 0].View.Font = new Font("굴림", 7, FontStyle.Regular);
+							for (int i = 1; i <= columnNum - 1; i++)
+							{
+								SensortsReportGrid[rows, i] = new SourceGrid.Cells.Cell(result[0][i] == null ? "" : result[0][i].ToString(), typeof(string));
+							}
+
+							result = null;
+						}
+						dt = dt.AddDays(+1);
+						rows++;
+					}
+
+					SensortsReportGrid.RowsCount = rows - 1;
+				}
+				else
+				{
+					con.Close();
+					MessageBox.Show("데이터가 없습니다.");
+					return false;
+				}
+			}
+			catch (Exception ex)
+			{
+				iLog.Error("[ERROR] " + ex.Message);
+				iLog.Error("[ERROR] " + ex.StackTrace);
+			}
+			finally
+			{
+				if (con != null) con.Close();
+				cmd = null;
+			}
+
+			return false;
+		}
+
+		private Boolean readMonthData(DateTime dateTime, int dev_idx)
 		{
 			OleDbConnection con = null;
 			OleDbCommand cmd = null;

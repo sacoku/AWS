@@ -22,8 +22,8 @@ using AWS.Config;
 namespace AWS.CONTROL
 {
     public class DataLogger
-    {   
-        static ILog iLog = log4net.LogManager.GetLogger("Logger");
+    {
+		ILog iLog = null;  
         public DataLoggerEnvironment environment = null;
         public SerialPort comPort = null;
 
@@ -60,11 +60,12 @@ namespace AWS.CONTROL
 
         public DataLogger(MainForm main, int idx, Boolean isRecovery, object lockObj)
         {
-            this.mainForm = main;
+			iLog = log4net.LogManager.GetLogger("Dev" + idx);
+			this.mainForm = main;
             this.environment = new DataLoggerEnvironment();
 
             this.protocol = new Protocol();
-            this.saveData = new SaveData();
+            this.saveData = new SaveData(idx);
 
 			lockObject = lockObj;
 
@@ -927,7 +928,7 @@ namespace AWS.CONTROL
 										+ ":" + startDateTime.Minute 
 										+ " 데이터 요청");
 
-							Thread.Sleep(1000);
+							Thread.Sleep(5000);
 							while (isLostRequest == true)
                             {
                                 if (nFailCnt >= 5)
