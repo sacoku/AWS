@@ -845,13 +845,13 @@ namespace AWS.VIEW
 			OleDbConnection con = null;
 			OleDbCommand cmd = null;
 
-			String fileName = String.Format("{0:yyyyMM}", dateTime);
+			String fileName = String.Format("{0:yyyyMMdd}", dateTime);
 
 			String year = String.Format("{0:yyyy}", dateTime);
 			String month = String.Format("{0:MM}", dateTime);
 			String day = String.Format("{0:dd}", dateTime);
 
-			string DBPath = AWSConfig.HOME_PATH + "\\AWSDATA\\" + AWS.Config.AWSConfig.sValue[(int)dev_idx].Name + "\\" + year + @"\" + @"\aws_" + fileName + ".mdb";
+			string DBPath = AWSConfig.HOME_PATH + "\\AWSDATA\\" + AWS.Config.AWSConfig.sValue[(int)dev_idx].Name + "\\" + year + @"\" + month + @"\aws_" + fileName + ".mdb";
 
 			if (!File.Exists(DBPath))
 			{
@@ -863,17 +863,31 @@ namespace AWS.VIEW
 
 			try
 			{
-				StringBuilder selectQuery = new StringBuilder()
-								.Append("SELECT								\n")
-								.Append("   AWS_DATE						\n")
-								.Append("  ,TEMP							\n")
-								.Append("  ,WD								\n")
-								.Append("  ,WS								\n")
-								.Append("  ,RAIN							\n")
-								.Append("  ,HUMIDITY						\n")
-								.Append("  ,SUNSHINE						\n")
-								.Append("  ,VISIBILITY						\n")
-								.Append("FROM AWS_MONTH						\n");
+				StringBuilder selectQuery = new StringBuilder();
+
+				DateTime sTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, 0, 0, 0);
+
+				for (int i = 0; i < 24; i++)
+				{
+					if(i != 0)
+					{
+						selectQuery.Append("union															\n");
+					}
+
+					selectQuery.Append("select '"+ sTime.ToString("HH:mm") + "' as atime					\n")
+							   .Append("       ,format(avg(temp), '#,##0.0') as atemp						\n")
+							   .Append("       ,format(avg(wd), '#,##0.0') as awd							\n")
+							   .Append("       ,format(avg(ws), '#,##0.0') as aws							\n")
+							   .Append("       ,format(avg(rain), '#,##0.0') as arain						\n")
+							   .Append("       ,format(avg(humidity), '#,##0') as ahumidity					\n")
+							   .Append("       ,format(avg(sunshine), '#,##0.0') as asunshine				\n")
+							   .Append("       ,format(avg(visibility), '#,##0') as avisibility				\n")
+							   .Append("from aws_min									\n")
+							   .Append("where receivetime >= #" + sTime.ToString("yyyy-MM-dd HH:mm:ss") + "#	\n")
+							   .Append("  and receivetime < #" + sTime.AddHours(+1).ToString("yyyy-MM-dd HH:mm:ss") + "#		\n");
+
+					sTime = sTime.AddHours(+1);
+				}
 
 				iLog.Debug("[QUERY] \n" + selectQuery);
 				con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + DBPath);
@@ -881,28 +895,28 @@ namespace AWS.VIEW
 				OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
 
 				con.Open();
-				myDataAdapter.Fill(readDataSet, "aws_month");
+				myDataAdapter.Fill(readDataSet, "aws_min");
 
 				if (readDataSet.Tables[0].Rows.Count > 0)
 				{
 					this.initGrid(dateTime, dev_idx);
 
 					DateTime readDateTime = new DateTime(dateTime.Year, dateTime.Month, 1, 0, 0, 0);
-					DateTime dt = new DateTime(dateTime.Year, dateTime.Month, 1, 0, 0, 0);
 
 					SensortsReportGrid.RowsCount = 2 + readDataSet.Tables[0].Rows.Count;
+					
 					int rows = 2;
-					while (readDateTime.Month == dt.Month)
+					for(int j=0;j<25;j++)
 					{
-						DataRow[] result = readDataSet.Tables[0].Select("aws_date = '" + dt.ToString("yyyy-MM-dd") + "'");
+						DataRow[] result = readDataSet.Tables[0].Select("atime = '" + readDateTime.ToString("HH:mm") + "'");
 
 						SourceGrid.Cells.Views.Cell yellowView = new SourceGrid.Cells.Views.Cell();
 						yellowView.BackColor = Color.Gray;
 						yellowView.ForeColor = Color.White;
 
-						if (result == null || result[0][1].ToString() == "")
+						if (result == null || result[0][1] == null || result[0][1].ToString() == "")
 						{
-							SourceGrid.Cells.Cell l_Cell = new SourceGrid.Cells.Cell(dt.ToString("yyyy-MM-dd"), typeof(string));
+							SourceGrid.Cells.Cell l_Cell = new SourceGrid.Cells.Cell(readDateTime.ToString("HH:mm"), typeof(string));
 							l_Cell.View = yellowView;
 
 							SensortsReportGrid[rows, 0] = l_Cell;
@@ -920,7 +934,7 @@ namespace AWS.VIEW
 						}
 						else
 						{
-							SensortsReportGrid[rows, 0] = new SourceGrid.Cells.Cell(dt.ToString("yyyy-MM-dd"), typeof(string));
+							SensortsReportGrid[rows, 0] = new SourceGrid.Cells.Cell(readDateTime.ToString("HH:mm"), typeof(string));
 							SensortsReportGrid[rows, 0].View.BackColor = Color.White;
 							SensortsReportGrid[rows, 0].View.ForeColor = Color.Black;
 							SensortsReportGrid[rows, 0].View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -932,7 +946,7 @@ namespace AWS.VIEW
 
 							result = null;
 						}
-						dt = dt.AddDays(+1);
+						readDateTime = readDateTime.AddHours(+1);
 						rows++;
 					}
 
@@ -947,8 +961,7 @@ namespace AWS.VIEW
 			}
 			catch (Exception ex)
 			{
-				iLog.Error("[ERROR] " + ex.Message);
-				iLog.Error("[ERROR] " + ex.StackTrace);
+				iLog.Error("[ERROR] " + ex.ToString());
 			}
 			finally
 			{

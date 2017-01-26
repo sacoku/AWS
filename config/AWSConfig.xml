@@ -17,11 +17,11 @@
 		<DEVICE>
 			<NAME>청송군 신촌리</NAME>
 			<LOCNUM>4272000000</LOCNUM>
-			<IP>192.168.0.1</IP>
+			<IP>211.224.132.197</IP>
 			<PORT>32000</PORT>
 			<ID>101</ID>
 			<PASSWD>0000</PASSWD>
-			<ENABLE>false</ENABLE>
+			<ENABLE>true</ENABLE>
 			<SENSORS>
 				<TEMP name="기온(℃)">true</TEMP>
 				<WINDIR name="풍향">true</WINDIR>

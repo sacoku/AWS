@@ -16,8 +16,9 @@ namespace AWS.Config
 
         public static int CDP = 0;
         public static int TSP = 0;
-        public static Boolean IS_REALTIME_RECOVERY = false;
-		public static int SCAN_DELAY = 5;
+		public static int RCSOD = 5;
+		public static int RCSD = 5;
+		public static Boolean IS_REALTIME_RECOVERY = false;
         public static string oracleDbStr = "";
         public static SensorStatus[] sValue = null;
         public static String HOME_PATH = "C:\\AWS\\";
@@ -51,7 +52,8 @@ namespace AWS.Config
                                 CDP = Convert.ToInt32(xn["COLL_DATA_PERIOD"].InnerText);
                                 TSP = Convert.ToInt32(xn["TIME_SYNC_PERIOD"].InnerText);
                                 IS_REALTIME_RECOVERY = Convert.ToBoolean(xn["REALTIME_RECOVERY"].InnerText);
-								SCAN_DELAY = Convert.ToInt32(xn["RECOVERY_SCAN_DELAY"].InnerText);
+								RCSD = Convert.ToInt32(xn["RECOVERY_SCAN_DELAY"].InnerText);
+								RCSOD = Convert.ToInt32(xn["RECOVERY_SCAN_ONCE_DELAY"].InnerText);
 								oracleDbStr = xn["ORACLE_DB"].InnerText;
                             }
                             break;

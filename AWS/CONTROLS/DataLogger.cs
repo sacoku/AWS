@@ -160,7 +160,7 @@ namespace AWS.CONTROL
             try
             {
                 ClientSocket.Close();
-
+				iLog.Info("연결을 해제했습니다.");
                 reConnect();
             }
             catch (Exception E)
@@ -172,18 +172,38 @@ namespace AWS.CONTROL
 
         private void reConnect()
         {
-            IPAddress ipAddress = IPAddress.Parse(environment.IP);
-            IPEndPoint remoteEP = new IPEndPoint(ipAddress, environment.PORT);
+			if (ClientSocket == null)
+			{
+				IPAddress ipAddress = IPAddress.Parse(environment.IP);
+				IPEndPoint remoteEP = new IPEndPoint(ipAddress, environment.PORT);
 
-            iLog.Info("[I: " + iPanelIdx + "] " + (iRetryConnCnt + 1) + "번째 재접속 합니다");
-            // Create a TCP/IP socket.
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+				iLog.Info("[I: " + iPanelIdx + "] " + (iRetryConnCnt + 1) + "번째 재접속 합니다");
+				// Create a TCP/IP socket.
+				client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            ClientSocket = new AsynchronousSocket(client, remoteEP);
-            ClientSocket.Received += new ReceiveDelegate(OnReceived);
+				ClientSocket = new AsynchronousSocket(client, remoteEP);
+				ClientSocket.Received += new ReceiveDelegate(OnReceived);
 
-            iRetryConnCnt++;
+				iRetryConnCnt++;
+			}
         }
+
+		private void DisConnect()
+		{
+			try
+			{
+				if(ClientSocket != null)
+				{
+					ClientSocket.Close();
+					ClientSocket = null;
+				}
+			}
+			catch(Exception e)
+			{
+				iLog.Error(e.Message);
+				iLog.Error(e.StackTrace);
+			}
+		}
 
         public byte[] StrToByteArray(string str)
         {
@@ -198,94 +218,107 @@ namespace AWS.CONTROL
         {
 			Thread.Sleep(5000); //Delay를 주고 시작한다.
 
-			while (flag)
-            {
-                //add by sacoku 161227
-                if(!ClientSocket.Connected())
-                {
-                    if (iRetryConnCnt > 5)
-                    {
-                        iLog.Error("재접속 횟수가 10회를 초과하여 접속 시도를 종료합니다.");
-                        this.CloseLogger();
-                        return;
-                    }
+			try
+			{
 
-                    reConnect();
-                    Thread.Sleep(5000);
-                    continue;
-                }
-                
-                if (isPause)
-                {
-                    Thread.Sleep(5000);
-                    continue;
-                }
+				while (flag)
+				{
+					//add by sacoku 161227
+					/*
+					if(!ClientSocket.Connected())
+					{
+						if (iRetryConnCnt > 5)
+						{
+							iLog.Error("재접속 횟수가 10회를 초과하여 접속 시도를 종료합니다.");
+							this.CloseLogger();
+							return;
+						}
 
-                iRetryConnCnt = 0;
-                bool bFlag = false;
-                if (m_DateTimeCommandDt < DateTime.Now)
-                {
-                    m_DateTimeCommandDt = DateTime.Now.AddHours(1);
-                    DateTime SyncDateTime = DateTime.Now;              
-
-                    this.SendCommand(SyncDateTime, this.StrToByteArray("AT?"));
-                    iLog.Info("[I: " + iPanelIdx + "][MESSAGE TO LOGGER] TIMESYNC MESSAGE");
-                    bFlag = true;
-                }
-
-                // 현재 자료 요구
-                if (bFlag == false)
-                {
-                    try
-                    {
-                        // 현재 자료를 요구 할때 만약 1분 이상시간이 지나면 시간을 바꾸어서 새로운 자료를 요구한다.
-                        //System.TimeSpan tSpan = new TimeSpan(0, 0, 1, 0, 0);
-
-                        if ((m_CollectDt.Minute <= DateTime.Now.Minute) && (DateTime.Now.Second > 30))
-                        {
-                            m_CollectDt = new System.DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 35);
-
-							// 현재 데이터를 요구한다
-							this.WeatherSendCommand(m_CollectDt, this.StrToByteArray("AB?"));
-							iLog.Info("[I: "
-										+ iPanelIdx
-										+ "][MESSAGE TO LOGGER] CURRENT DATA CALL "
-										+ m_CollectDt.Year
-										+ "/"
-										+ m_CollectDt.Month
-										+ "/"
-										+ m_CollectDt.Day
-										+ " "
-										+ m_CollectDt.Hour
-										+ ":"
-										+ m_CollectDt.Minute + " 데이터 요청");
-                        }
+						reConnect();
+						Thread.Sleep(5000);
+						continue;
 					}
-                    catch (Exception E)
-                    {
-                        iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : StartCollect2 " + E.Message);
-                    }
+					*/
 
-                    iLog.Info(    "[I: " + iPanelIdx 
-								+ "] m_CollectDt TIME : " 
-								+ m_CollectDt.Year 
-								+ "/" 
-								+ m_CollectDt.Month 
-								+ "/" 
-								+ m_CollectDt.Day 
-								+ " " 
-								+ m_CollectDt.Hour 
-								+ ":" 
-								+ m_CollectDt.Minute 
-								+ ":" + m_CollectDt.Second);
+					if (isPause)
+					{
+						Thread.Sleep(5000);
+						continue;
+					}
 
-                    bFlag = true;
-                } else
-                {
-                    iLog.Info("요청 대기중입니다.");
-                }
-                Thread.Sleep(AWS.Config.AWSConfig.CDP * 1000);
-            }
+					iRetryConnCnt = 0;
+					bool bFlag = false;
+					if (m_DateTimeCommandDt < DateTime.Now)
+					{
+						m_DateTimeCommandDt = DateTime.Now.AddHours(1);
+						DateTime SyncDateTime = DateTime.Now;
+
+						this.SendCommand(SyncDateTime, this.StrToByteArray("AT?"));
+						iLog.Info("[I: " + iPanelIdx + "][MESSAGE TO LOGGER] TIMESYNC MESSAGE");
+						bFlag = true;
+					}
+
+					// 현재 자료 요구
+					if (bFlag == false)
+					{
+						try
+						{
+							// 현재 자료를 요구 할때 만약 1분 이상시간이 지나면 시간을 바꾸어서 새로운 자료를 요구한다.
+							//System.TimeSpan tSpan = new TimeSpan(0, 0, 1, 0, 0);
+
+							if ((m_CollectDt.Minute <= DateTime.Now.Minute) && (DateTime.Now.Second > 30))
+							{
+								m_CollectDt = new System.DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 35);
+
+								// 현재 데이터를 요구한다
+								reConnect();
+								this.WeatherSendCommand(m_CollectDt, this.StrToByteArray("AB?"));
+								iLog.Info("[I: "
+											+ iPanelIdx
+											+ "][MESSAGE TO LOGGER] CURRENT DATA CALL "
+											+ m_CollectDt.Year
+											+ "/"
+											+ m_CollectDt.Month
+											+ "/"
+											+ m_CollectDt.Day
+											+ " "
+											+ m_CollectDt.Hour
+											+ ":"
+											+ m_CollectDt.Minute + " 데이터 요청");
+							}
+						}
+						catch (Exception E)
+						{
+							iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : StartCollect2 " + E.Message);
+						}
+
+						iLog.Info("[I: " + iPanelIdx
+									+ "] m_CollectDt TIME : "
+									+ m_CollectDt.Year
+									+ "/"
+									+ m_CollectDt.Month
+									+ "/"
+									+ m_CollectDt.Day
+									+ " "
+									+ m_CollectDt.Hour
+									+ ":"
+									+ m_CollectDt.Minute
+									+ ":" + m_CollectDt.Second);
+
+						bFlag = true;
+					}
+					else
+					{
+						iLog.Info("요청 대기중입니다.");
+					}
+					Thread.Sleep(AWS.Config.AWSConfig.CDP * 1000);
+				}
+			}
+			catch(Exception e)
+			{
+				iLog.Error(e.Message);
+				iLog.Error(e.StackTrace);
+			}
         }
 
         private void OnReceived(object sender, ReceivedEventArgs e)
@@ -677,10 +710,13 @@ namespace AWS.CONTROL
             catch (Exception E)
             {
                 iLog.Info("[I: " + iPanelIdx + "][ERROR] DataLogger : AnswerProtocolCatch2 " + E.Message);
-                return false;
+				DisConnect();
+				return false;
             }
 
-            return true;
+			DisConnect();
+
+			return true;
         }
 
         public void CloseLogger()
@@ -794,8 +830,11 @@ namespace AWS.CONTROL
                 iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : KMA2Catch " + E.Message);
                 bResult = false;
             }
-            
-            return bResult;
+
+			DisConnect();
+
+
+			return bResult;
         }
 
         public ushort ByteChange(ushort data)
@@ -823,7 +862,7 @@ namespace AWS.CONTROL
         public void StartWatchDog()
         {
 
-			Thread.Sleep(5000); //Delay를 주고 시작한다.
+			Thread.Sleep(20000); //Delay를 주고 시작한다.
 
 			while (flag)
 			{
@@ -849,7 +888,7 @@ namespace AWS.CONTROL
 					RecoverLostData(currentTime, false);
 				}
 
-				Thread.Sleep(AWSConfig.SCAN_DELAY * 1000);
+				Thread.Sleep(AWSConfig.RCSD * 1000);
 
 			}
 		}
@@ -914,6 +953,7 @@ namespace AWS.CONTROL
 
                         if (result == null || result.Length <= 0)
                         {
+							reConnect();
                             SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
                             isLostRequest = true;
                             iLog.Info(    "[I: " + iPanelIdx 
@@ -928,7 +968,7 @@ namespace AWS.CONTROL
 										+ ":" + startDateTime.Minute 
 										+ " 데이터 요청");
 
-							Thread.Sleep(5000);
+							Thread.Sleep(AWSConfig.RCSOD * 1000);
 							while (isLostRequest == true)
                             {
                                 if (nFailCnt >= 5)
