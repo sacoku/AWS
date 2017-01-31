@@ -70,7 +70,7 @@ namespace AWS.CONTROL
             }
             catch (Exception ex)
             {
-                iLog.Debug(ex.Message);
+                iLog.Error(ex.ToString());
             }
 
             return result;

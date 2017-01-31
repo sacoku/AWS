@@ -92,7 +92,7 @@ namespace AWS.CONTROL
 
                 ClientSocket = new AsynchronousSocket(client, remoteEP);
                 ClientSocket.Received += new ReceiveDelegate(OnReceived);
-            }
+			}
             catch (Exception ex)
             {
                 //this.mainForm.displayStatus("컴포트 오픈 실패!", Color.Red);
@@ -151,7 +151,7 @@ namespace AWS.CONTROL
 			}
 			catch(Exception e)
 			{
-				iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + e.Message);
+				iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + e.ToString());
 			}
         }
 
@@ -174,17 +174,26 @@ namespace AWS.CONTROL
         {
 			if (ClientSocket == null)
 			{
-				IPAddress ipAddress = IPAddress.Parse(environment.IP);
-				IPEndPoint remoteEP = new IPEndPoint(ipAddress, environment.PORT);
+				try
+				{
+					IPAddress ipAddress = IPAddress.Parse(environment.IP);
+					IPEndPoint remoteEP = new IPEndPoint(ipAddress, environment.PORT);
 
-				iLog.Info("[I: " + iPanelIdx + "] " + (iRetryConnCnt + 1) + "번째 재접속 합니다");
-				// Create a TCP/IP socket.
-				client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+					iLog.Info("[I: " + iPanelIdx + "] " + (iRetryConnCnt + 1) + "번째 재접속 합니다");
+					// Create a TCP/IP socket.
+					client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-				ClientSocket = new AsynchronousSocket(client, remoteEP);
-				ClientSocket.Received += new ReceiveDelegate(OnReceived);
+					ClientSocket = new AsynchronousSocket(client, remoteEP);
+					ClientSocket.Received += new ReceiveDelegate(OnReceived);
 
-				iRetryConnCnt++;
+					ClientSocket.Disconnected += new DisconnectDelegate(OnDisconnected);
+
+					iRetryConnCnt++;
+				} 
+				catch(Exception e)
+				{
+					iLog.Error(e.ToString());
+				}
 			}
         }
 
@@ -192,6 +201,7 @@ namespace AWS.CONTROL
 		{
 			try
 			{
+				iLog.Debug("연결을 해제합니다.");
 				if(ClientSocket != null)
 				{
 					ClientSocket.Close();
@@ -200,8 +210,7 @@ namespace AWS.CONTROL
 			}
 			catch(Exception e)
 			{
-				iLog.Error(e.Message);
-				iLog.Error(e.StackTrace);
+				iLog.Error(e.ToString());
 			}
 		}
 
@@ -323,7 +332,6 @@ namespace AWS.CONTROL
 
         private void OnReceived(object sender, ReceivedEventArgs e)
         {
-
             for (int i = 0; i < e.Data.Length; i++)
             {
                 this.protocol.ProtocolProcessing(e.Data[i]);
@@ -709,7 +717,7 @@ namespace AWS.CONTROL
             }
             catch (Exception E)
             {
-                iLog.Info("[I: " + iPanelIdx + "][ERROR] DataLogger : AnswerProtocolCatch2 " + E.Message);
+                iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : AnswerProtocolCatch2 " + E.Message);
 				DisConnect();
 				return false;
             }
@@ -1001,8 +1009,7 @@ namespace AWS.CONTROL
             }
             catch (Exception e)
             {
-                iLog.Error(e.Message);
-                iLog.Error(e.StackTrace.ToString());
+                iLog.Error(e.ToString());
                 throw e;
             } 
             finally

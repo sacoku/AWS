@@ -71,8 +71,7 @@ namespace AWS.CONTROLS
             }
             catch (SocketException ex)
             {
-                iLog.Debug(ex.Message);
-                Debug.WriteLine(ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
 
@@ -88,7 +87,11 @@ namespace AWS.CONTROLS
             try
             {
                 int nBytesRec = 0;
-                if (sock.workSocket != null)
+
+				if (sock.workSocket == null)
+					return;
+
+				if (sock.workSocket != null)
                 {
                     nBytesRec = sock.workSocket.EndReceive(ar);
                 }
@@ -113,7 +116,7 @@ namespace AWS.CONTROLS
             {
                 // 여기서 원격지 접속이 강제로 해제 되었을때를 처리한다. 
                 //Debug.WriteLine("니기미 " + E.ToString());
-                iLog.Debug(E.Message);
+                iLog.Error(E.ToString());
                 if (Disconnected != null)
                 {
                     if (E.Message == "현재 연결은 원격 호스트에 의해 강제로 끊겼습니다")
@@ -153,7 +156,7 @@ namespace AWS.CONTROLS
                 if (workSocket != null)
                 {
                     if (workSocket.Connected == true)
-                    {
+                    {	
                         workSocket.Shutdown(SocketShutdown.Both);
                     }
 
@@ -168,7 +171,7 @@ namespace AWS.CONTROLS
             }
             catch (Exception E)
             {
-                iLog.Debug(E.Message);
+                iLog.Error(E.ToString());
             }
         }
     }

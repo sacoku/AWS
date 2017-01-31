@@ -104,7 +104,7 @@ namespace AWS.Config
                     }
                 }
 
-                iLog.Debug("[Configuration File Load Completed...");
+                iLog.Info("[Configuration File Load Completed...");
             } catch(Exception e)
             {
                 MessageBox.Show(e.Message);

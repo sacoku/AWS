@@ -122,8 +122,7 @@ namespace AWS
 
 			} catch(Exception e)
 			{
-				iLog.Error(e.Message);
-				iLog.Error(e.StackTrace);
+				iLog.Error(e.ToString());
 			}
 
 		}
@@ -223,7 +222,7 @@ namespace AWS
 			}
 			catch (Exception ex)
             {
-				iLog.Error(ex.Message);
+				iLog.Error(ex.ToString());
             }
         }
 
@@ -241,7 +240,7 @@ namespace AWS
             }
             catch (Exception ex)
             {
-                iLog.Debug(ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
 
