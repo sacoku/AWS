@@ -47,11 +47,13 @@ namespace AWS.CONTROLS
         public event ReceiveDelegate Received = null;       // 데이터 받았을때 이벤트
         private IPEndPoint iep = null;
 
-        ILog iLog = log4net.LogManager.GetLogger("Logger");
+		ILog iLog = null;
 
-        public AsynchronousSocket(Socket sock, IPEndPoint remoteEP)
+        public AsynchronousSocket(Socket sock, IPEndPoint remoteEP, int idx)
         {
-            buffer = new byte[BufferSize];
+			iLog = log4net.LogManager.GetLogger("Dev" + idx);
+
+			buffer = new byte[BufferSize];
             workSocket = sock;
             workSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
 
@@ -102,9 +104,10 @@ namespace AWS.CONTROLS
                     Array.Copy(buffer, byReturn, nBytesRec);
                     ReceivedEventArgs ea = new ReceivedEventArgs(byReturn);
                     if (Received != null) Received(this, ea);
-                    // 데이터를 다시 받도록한다.
 
-                    workSocket.BeginReceive(buffer, 0, AsynchronousSocket.BufferSize, 0, new AsyncCallback(ReadCallback), this);
+                    // 데이터를 다시 받도록한다.
+					if(buffer != null)
+						workSocket.BeginReceive(buffer, 0, AsynchronousSocket.BufferSize, 0, new AsyncCallback(ReadCallback), this);
                 }
                 else
                 {
@@ -155,14 +158,17 @@ namespace AWS.CONTROLS
             {
                 if (workSocket != null)
                 {
-                    if (workSocket.Connected == true)
-                    {	
-                        workSocket.Shutdown(SocketShutdown.Both);
-                    }
+					buffer = null;
 
-                    workSocket.Close();
+					if (workSocket.Connected == true)
+                    {
+						workSocket.Shutdown(SocketShutdown.Both);
 
+					}
+					
+					workSocket.Close();
                     //hanji 소켓이 안 없어질때가 발생함.. 안 죽었으면 날려버린다.  ㅋ
+					
                     if (workSocket != null)
                     {
                         workSocket = null;

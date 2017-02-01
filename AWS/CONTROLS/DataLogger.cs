@@ -54,7 +54,6 @@ namespace AWS.CONTROL
         Boolean isPause = false;
         Boolean isLostRequest = false;
 		Boolean bIsReadyToRun = false;
-        Thread thWatchDog = null;
 
         private object lockObject = null;
 
@@ -90,7 +89,7 @@ namespace AWS.CONTROL
                 // Create a TCP/IP socket.
                 client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-                ClientSocket = new AsynchronousSocket(client, remoteEP);
+                ClientSocket = new AsynchronousSocket(client, remoteEP, iPanelIdx);
                 ClientSocket.Received += new ReceiveDelegate(OnReceived);
 			}
             catch (Exception ex)
@@ -183,7 +182,7 @@ namespace AWS.CONTROL
 					// Create a TCP/IP socket.
 					client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-					ClientSocket = new AsynchronousSocket(client, remoteEP);
+					ClientSocket = new AsynchronousSocket(client, remoteEP, iPanelIdx);
 					ClientSocket.Received += new ReceiveDelegate(OnReceived);
 
 					ClientSocket.Disconnected += new DisconnectDelegate(OnDisconnected);

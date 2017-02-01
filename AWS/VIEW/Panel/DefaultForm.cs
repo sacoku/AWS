@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using log4net;
 using AWS.MODEL;
+using System.Threading;
 
 namespace AWS.VIEW.Panel
 {
@@ -23,8 +24,9 @@ namespace AWS.VIEW.Panel
         private Label[] ibValue = null;
 
         private Label iblDevName = new Label();
-        
-        public DefaultForm(String dName, int idx)
+		private Thread DataCollWatch = null;
+
+		public DefaultForm(String dName, int idx)
         {
             this.DeviceName = dName;
             this.idx = idx;
@@ -70,7 +72,7 @@ namespace AWS.VIEW.Panel
             iblDevName.TextAlign = ContentAlignment.MiddleCenter;
             iblDevName.Font = myFont;
             iblDevName.AutoSize = true;
-            iblDevName.ForeColor = Color.Yellow;
+            iblDevName.ForeColor = Color.Red;
             iblDevName.BackColor = Color.Transparent;
 
             for (int j = 0; j < AWS.Config.AWSConfig.sValue[idx].SensorCnt; j++)
@@ -106,7 +108,13 @@ namespace AWS.VIEW.Panel
                                 
                 tableLayoutPanel2.Controls.Add(pictureBox[j]);
             }
-        }
+
+			DataCollWatch = new Thread(() =>
+			   {
+			   }
+			); DataCollWatch.Start();
+
+		}
 
         private void GenerateTable(int columnCount, int rowCount)
         {
@@ -185,7 +193,8 @@ namespace AWS.VIEW.Panel
         {
             try
             {
-                for (int i = 0; i < ibValue.Length; i++)
+				iblDevName.ForeColor = Color.Yellow;
+				for (int i = 0; i < ibValue.Length; i++)
                 {
                     switch(AWS.Config.AWSConfig.sValue[idx].SensorValues[i].id)
                     {
