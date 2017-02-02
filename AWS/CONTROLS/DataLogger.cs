@@ -152,15 +152,23 @@ namespace AWS.CONTROL
 			{
 				iLog.Error("[I: " + iPanelIdx + "][ERROR] : " + e.ToString());
 			}
-        }
+
+			iLog.Info("[I: " + iPanelIdx + "] 시작되었습니다.");
+
+		}
 
         public void OnDisconnected(object sender, EventArgs e)
         {
             try
             {
-                ClientSocket.Close();
+				if (ClientSocket != null)
+				{
+					ClientSocket.Close();
+					ClientSocket = null;
+				}
+				
 				iLog.Info("연결을 해제했습니다.");
-                reConnect();
+                //reConnect();
             }
             catch (Exception E)
             {
@@ -171,14 +179,20 @@ namespace AWS.CONTROL
 
         private void reConnect()
         {
-			if (ClientSocket == null)
+			/*
+			if(ClientSocket != null && ClientSocket.Connected())
 			{
-				try
+				DisConnect();
+			}
+			*/
+
+			try
+			{
+				if (ClientSocket == null)
 				{
 					IPAddress ipAddress = IPAddress.Parse(environment.IP);
 					IPEndPoint remoteEP = new IPEndPoint(ipAddress, environment.PORT);
 
-					iLog.Info("[I: " + iPanelIdx + "] " + (iRetryConnCnt + 1) + "번째 재접속 합니다");
 					// Create a TCP/IP socket.
 					client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -188,13 +202,17 @@ namespace AWS.CONTROL
 					ClientSocket.Disconnected += new DisconnectDelegate(OnDisconnected);
 
 					iRetryConnCnt++;
-				} 
-				catch(Exception e)
-				{
-					iLog.Error(e.ToString());
 				}
+			} 
+			catch(Exception e)
+			{
+				iLog.Error(e.ToString());
+				return;
 			}
-        }
+
+			iLog.Info("연결되었습니다. ");
+
+		}
 
 		private void DisConnect()
 		{
@@ -225,6 +243,8 @@ namespace AWS.CONTROL
         public void StartCollect()
         {
 			Thread.Sleep(5000); //Delay를 주고 시작한다.
+
+			iLog.Info("데이터 수집을 시작합니다.");
 
 			try
 			{
@@ -258,6 +278,7 @@ namespace AWS.CONTROL
 					bool bFlag = false;
 					if (m_DateTimeCommandDt < DateTime.Now)
 					{
+						reConnect();
 						m_DateTimeCommandDt = DateTime.Now.AddHours(1);
 						DateTime SyncDateTime = DateTime.Now;
 
@@ -297,7 +318,7 @@ namespace AWS.CONTROL
 						}
 						catch (Exception E)
 						{
-							iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : StartCollect2 " + E.Message);
+							iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : StartCollect2 " + E.ToString());
 						}
 
 						iLog.Info("[I: " + iPanelIdx
@@ -522,8 +543,8 @@ namespace AWS.CONTROL
                         //AWS.UTIL.CommonUtil.DumpBytes(datas, dumpbytes);
                         ClientSocket.Send(datas);
                     }
-                    else
-                        reConnect();
+                    //else
+                    //    reConnect();
 
 
                     this.mainForm.setTXRX(1);
@@ -577,8 +598,8 @@ namespace AWS.CONTROL
             catch (Exception e)
             {
                 iLog.Error("[I: " + iPanelIdx + "][ERROR] : SendCommand " + e.Message);
-                if (!this.ClientSocket.Connected())
-                    reConnect();
+                //if (!this.ClientSocket.Connected())
+                //   reConnect();
             }
         }
 
@@ -716,8 +737,8 @@ namespace AWS.CONTROL
             }
             catch (Exception E)
             {
-                iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : AnswerProtocolCatch2 " + E.Message);
 				DisConnect();
+				iLog.Error("[I: " + iPanelIdx + "][ERROR] DataLogger : AnswerProtocolCatch2 " + E.Message);
 				return false;
             }
 
@@ -839,7 +860,6 @@ namespace AWS.CONTROL
             }
 
 			DisConnect();
-
 
 			return bResult;
         }

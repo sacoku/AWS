@@ -20,6 +20,7 @@ namespace AWS
     {
         public DisplayForm displayForm = null;
         public ReportForm reportForm = null;
+		public GraphForm graphForm = null;
         public DataLogger[] logger = null;
 		public DataLogger[] rLogger = null;
 
@@ -76,19 +77,23 @@ namespace AWS
 				this.displayForm = new DisplayForm(this);
 				this.reportForm = new ReportForm(this);
 				this.displayForm2 = new DisplayForm2(this);
+				this.graphForm = new GraphForm(this);
 
 				this.displayForm.ControlBox = false;
 				this.displayForm2.ControlBox = false;
+				this.graphForm.ControlBox = false;
 
 				this.displayForm.MdiParent = this;
 				this.reportForm.MdiParent = this;
 				this.displayForm2.MdiParent = this;
+				this.graphForm.MdiParent = this;
 
 				//this.displayForm.Show();
 				this.displayForm2.Show();
 
 				this.displayForm2.Dock = DockStyle.Fill;
 				this.reportForm.Dock = DockStyle.Fill;
+				this.graphForm.Dock = DockStyle.Fill;
 
 				checkAccessFile();
 
@@ -210,8 +215,30 @@ namespace AWS
         /// <param name="e"></param>
         private void toolStripButton5_Click(object sender, EventArgs e)
         {
-            try
-            {
+			try
+			{
+				Form activeChild = this.ActiveMdiChild;
+
+				if (activeChild.Name != "GraphForm")
+				{
+					//this.displayForm.Show();
+					//this.displayForm.BringToFront();
+					//this.displayForm.StartPosition = FormStartPosition.CenterScreen;
+					this.graphForm.Show();
+					this.graphForm.BringToFront();
+					this.graphForm.StartPosition = FormStartPosition.CenterScreen;
+				}
+			}
+			catch (Exception ex)
+			{
+				iLog.Error("toolStripButton1_Click : " + ex.Message);
+			}
+		}
+
+		private void toolStripButton4_Click(object sender, EventArgs e)
+		{
+			try
+			{
 				System.Diagnostics.Process ps = new System.Diagnostics.Process();
 				ps.StartInfo.FileName = "notepad";
 				ps.StartInfo.Arguments = AWS.Config.AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml";
@@ -221,17 +248,17 @@ namespace AWS
 				ps.Start();
 			}
 			catch (Exception ex)
-            {
+			{
 				iLog.Error(ex.ToString());
-            }
-        }
+			}
+		}
 
-        /// <summary>
-        /// 화면 왼쪽 하단에 제어 전송 및 수신 상태를 보여주는 메소드
-        /// </summary>
-        /// <param name="status"></param>
-        /// <param name="foreColor"></param>
-        public void displayStatus(String status, Color foreColor)
+		/// <summary>
+		/// 화면 왼쪽 하단에 제어 전송 및 수신 상태를 보여주는 메소드
+		/// </summary>
+		/// <param name="status"></param>
+		/// <param name="foreColor"></param>
+		public void displayStatus(String status, Color foreColor)
         {
             try
             {
@@ -428,5 +455,5 @@ namespace AWS
         {
 
         }
-    } 
+	} 
 }

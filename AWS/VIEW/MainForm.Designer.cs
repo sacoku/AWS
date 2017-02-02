@@ -42,6 +42,7 @@
 			this.출력ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.설정ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.데이터동기화ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
 			this.toolStrip1.SuspendLayout();
 			this.statusStrip1.SuspendLayout();
 			this.menuStrip1.SuspendLayout();
@@ -68,7 +69,7 @@
 			this.toolStripButton2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.toolStripButton2.Name = "toolStripButton2";
-			this.toolStripButton2.Size = new System.Drawing.Size(36, 36);
+			this.toolStripButton2.Size = new System.Drawing.Size(36, 40);
 			this.toolStripButton2.Text = "Report";
 			this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
 			// 
@@ -79,7 +80,7 @@
 			this.toolStripButton3.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.toolStripButton3.Name = "toolStripButton3";
-			this.toolStripButton3.Size = new System.Drawing.Size(36, 36);
+			this.toolStripButton3.Size = new System.Drawing.Size(38, 40);
 			this.toolStripButton3.Text = "Config";
 			this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton5_Click);
 			// 
@@ -88,12 +89,13 @@
 			this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton1,
             this.toolStripButton2,
-            this.toolStripButton3});
+            this.toolStripButton3,
+            this.toolStripButton4});
 			this.toolStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this.toolStrip1.Location = new System.Drawing.Point(0, 24);
 			this.toolStrip1.Name = "toolStrip1";
 			this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-			this.toolStrip1.Size = new System.Drawing.Size(1584, 39);
+			this.toolStrip1.Size = new System.Drawing.Size(1584, 43);
 			this.toolStrip1.TabIndex = 4;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -177,6 +179,17 @@
 			this.데이터동기화ToolStripMenuItem.Text = "데이터 동기화";
 			this.데이터동기화ToolStripMenuItem.Click += new System.EventHandler(this.DataSyncMenuItem_Click);
 			// 
+			// toolStripButton4
+			// 
+			this.toolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.toolStripButton4.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton4.Image")));
+			this.toolStripButton4.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this.toolStripButton4.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.toolStripButton4.Name = "toolStripButton4";
+			this.toolStripButton4.Size = new System.Drawing.Size(36, 40);
+			this.toolStripButton4.Text = "Config";
+			this.toolStripButton4.Click += new System.EventHandler(this.toolStripButton4_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -220,6 +233,7 @@
         private System.Windows.Forms.ToolStripMenuItem 설정ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 출력ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 데이터동기화ToolStripMenuItem;
-    }
+		private System.Windows.Forms.ToolStripButton toolStripButton4;
+	}
 }
 

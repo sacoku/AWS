@@ -23,6 +23,7 @@ namespace AWS.VIEW.Panel
         private Label[] ibName = null;
         private Label[] ibValue = null;
 
+		private int nCallCnt = 0;
         private Label iblDevName = new Label();
 		private Thread DataCollWatch = null;
 
@@ -109,8 +110,25 @@ namespace AWS.VIEW.Panel
                 tableLayoutPanel2.Controls.Add(pictureBox[j]);
             }
 
+			int nPrevCnt = 0;
 			DataCollWatch = new Thread(() =>
 			   {
+				   Thread.Sleep(1000 * 60 * 3);
+
+				   nPrevCnt = nCallCnt;
+				   while (true)
+				   {
+					   if (nCallCnt == nPrevCnt)
+					   {
+						   iblDevName.ForeColor = Color.Red;
+					   } 
+					   else
+					   {
+						   nPrevCnt = nCallCnt;
+					   }
+
+					   Thread.Sleep(1000 * 60 * 5);
+				   }
 			   }
 			); DataCollWatch.Start();
 
@@ -194,6 +212,7 @@ namespace AWS.VIEW.Panel
             try
             {
 				iblDevName.ForeColor = Color.Yellow;
+				nCallCnt++;
 				for (int i = 0; i < ibValue.Length; i++)
                 {
                     switch(AWS.Config.AWSConfig.sValue[idx].SensorValues[i].id)
@@ -265,5 +284,10 @@ namespace AWS.VIEW.Panel
                 iLog.Info("[ERROR] DisplayForm : DisplayData " + ex.Message);
             }
         }
-    }
+
+		private void DefaultForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			DataCollWatch.Abort();
+		}
+	}
 }

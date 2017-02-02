@@ -68,8 +68,8 @@ namespace AWS.CONTROLS
             {
                 workSocket.EndConnect(iar);
 
-                // 접속된 소켓에 비동기 Receive 설정
-                this.workSocket.BeginReceive(buffer, 0, AsynchronousSocket.BufferSize, 0, new AsyncCallback(ReadCallback), this);
+				// 접속된 소켓에 비동기 Receive 설정
+				this.workSocket.BeginReceive(buffer, 0, AsynchronousSocket.BufferSize, 0, new AsyncCallback(ReadCallback), this);
             }
             catch (SocketException ex)
             {
@@ -111,8 +111,9 @@ namespace AWS.CONTROLS
                 }
                 else
                 {
-                    // If no data was recieved then the connection is probably dead
-                    workSocket.BeginConnect(iep, new AsyncCallback(Connected), workSocket);
+					// If no data was recieved then the connection is probably dead
+					if(workSocket != null && !workSocket.Connected) workSocket.BeginConnect(iep, new AsyncCallback(Connected), workSocket);
+					//Close();
                 }
             }
             catch (Exception E)
@@ -154,7 +155,7 @@ namespace AWS.CONTROLS
 
         public void Close()
         {
-            try
+			try
             {
                 if (workSocket != null)
                 {
