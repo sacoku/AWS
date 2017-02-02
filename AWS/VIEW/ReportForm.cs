@@ -829,7 +829,7 @@ namespace AWS.VIEW
             }
             catch (Exception ex)
             {
-                iLog.Info("[ERROR] " + ex.Message);
+                iLog.Error(ex.ToString());
             }
             finally
             {
@@ -961,7 +961,7 @@ namespace AWS.VIEW
 			}
 			catch (Exception ex)
 			{
-				iLog.Error("[ERROR] " + ex.ToString());
+				iLog.Error(ex.ToString());
 			}
 			finally
 			{
@@ -1079,8 +1079,7 @@ namespace AWS.VIEW
 			}
 			catch (Exception ex)
 			{
-				iLog.Error("[ERROR] " + ex.Message);
-				iLog.Error("[ERROR] " + ex.StackTrace);
+				iLog.Error(ex.ToString());
 			}
 			finally
 			{

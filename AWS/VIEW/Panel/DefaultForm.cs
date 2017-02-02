@@ -281,7 +281,7 @@ namespace AWS.VIEW.Panel
             }
             catch (Exception ex)
             {
-                iLog.Info("[ERROR] DisplayForm : DisplayData " + ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
 

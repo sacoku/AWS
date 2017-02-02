@@ -145,7 +145,7 @@ namespace AWS.VIEW
             }
             catch (Exception ex)
             {
-                iLog.Info("[ERROR] DisplayForm : DisplayData " + ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
 
@@ -313,7 +313,7 @@ namespace AWS.VIEW
             }
             catch (Exception ex)
             {
-                iLog.Info("[ERROR] DisplayForm : ByteChangAll2 " + ex.Message);
+                iLog.Error(ex.ToString());
             }
             return kma2;
         }

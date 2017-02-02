@@ -232,8 +232,7 @@ namespace AWS.CONTROL
             }
             catch (Exception ex)
             {
-                iLog.Error("[ERROR] saveData : " + ex.Message);
-                iLog.Error(ex.StackTrace.ToString());
+                iLog.Error(ex.ToString());
             }
             finally
             {
@@ -271,7 +270,7 @@ namespace AWS.CONTROL
 
                 //데이터 저장
                 am.InsertSensorData(receive, (int)o, lastKma2, min_value, max_value);
-
+				
                 om = new OracleDBManager(dev_idx);
                 om.Connect();
                 om.InsertAwsStampData((int)o, receive, lastKma2, min_value, max_value);
@@ -338,7 +337,7 @@ namespace AWS.CONTROL
             }
             catch (Exception ex)
             {
-                iLog.Error("[ERROR] saveLastData : saveLastData " + ex.Message);
+                iLog.Error(ex.ToString());
             }
             finally
             {
@@ -479,7 +478,7 @@ namespace AWS.CONTROL
             }
             catch (Exception ex)
             {
-                iLog.Error("[ERROR] saveData : ByteChangAll2 " + ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
 
@@ -540,7 +539,7 @@ namespace AWS.CONTROL
             }
             catch (Exception ex)
             {
-                iLog.Error("[ERROR] saveData : ByteChangAll2 " + ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
     }

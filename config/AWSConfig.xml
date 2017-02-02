@@ -1,9 +1,10 @@
-<AWS>
+﻿<AWS>
 	<CONFIG>
 		<COLL_DATA_PERIOD>5</COLL_DATA_PERIOD>		
 		<TIME_SYNC_PERIOD>300</TIME_SYNC_PERIOD>
 		<REALTIME_RECOVERY>false</REALTIME_RECOVERY>
 		<RECOVERY_SCAN_DELAY>5</RECOVERY_SCAN_DELAY>
+		<RECOVERY_SCAN_ONCE_DELAY>5</RECOVERY_SCAN_ONCE_DELAY>
 		<ORACLE_DB>Data Source=(DESCRIPTION =
                     (ADDRESS_LIST =                                   
                       (ADDRESS = (PROTOCOL = TCP)(Host = 106.243.122.101)(Port = 1521))
@@ -23,11 +24,11 @@
 			<PASSWD>0000</PASSWD>
 			<ENABLE>true</ENABLE>
 			<SENSORS>
-				<TEMP name="기온(℃)">true</TEMP>
-				<WINDIR name="풍향">true</WINDIR>
+				<WINDIR name="풍향(dir)">true</WINDIR>
 				<WINSPEED name="풍속(m/s)">true</WINSPEED>
-				<RAINSTATUS name="강우상태">true</RAINSTATUS>
+                                <TEMP name="기온(℃)">true</TEMP>
 				<HUMIDITY name="습도(%)">true</HUMIDITY>
+				<RAINSTATUS name="강우상태(유/무)">true</RAINSTATUS>
 				<RAINFALL name="강우량(mm)">true</RAINFALL>
 				<SUNSHINE name="일조(hour)">true</SUNSHINE>
 				<VISIBILITY name="시정(m)">true</VISIBILITY>
@@ -43,9 +44,9 @@
 			<ENABLE>true</ENABLE>
 			<SENSORS>
 				<TEMP name="기온(℃)">true</TEMP>
-				<WINDIR name="풍향">false</WINDIR>
+				<WINDIR name="풍향(dir)">false</WINDIR>
 				<WINSPEED name="풍속(m/s)">false</WINSPEED>
-				<RAINSTATUS name="강우상태">false</RAINSTATUS>
+				<RAINSTATUS name="강우상태(유/무)">false</RAINSTATUS>
 				<HUMIDITY name="습도(%)">true</HUMIDITY>
 				<RAINFALL name="강우량(mm)">false</RAINFALL>
 				<SUNSHINE name="일조(hour)">true</SUNSHINE>
@@ -62,9 +63,9 @@
 			<ENABLE>true</ENABLE>
 			<SENSORS>
 				<TEMP name="기온(℃)">true</TEMP>
-				<WINDIR name="풍향">false</WINDIR>
+				<WINDIR name="풍향(dir)">false</WINDIR>
 				<WINSPEED name="풍속(m/s)">false</WINSPEED>
-				<RAINSTATUS name="강우상태">false</RAINSTATUS>
+				<RAINSTATUS name="강우상태(유/무)">false</RAINSTATUS>
 				<HUMIDITY name="습도(%)">true</HUMIDITY>
 				<RAINFALL name="강우량(mm)">false</RAINFALL>
 				<SUNSHINE name="일조(hour)">true</SUNSHINE>
