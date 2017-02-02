@@ -234,7 +234,7 @@ namespace AWS.CONTROL
 					if (m_DateTimeCommandDt < DateTime.Now)
 					{
 						Connect();
-						Thread.Sleep(1000);
+						Thread.Sleep(3000);
 
 						m_DateTimeCommandDt = DateTime.Now.AddHours(1);
 						DateTime SyncDateTime = DateTime.Now;
@@ -253,7 +253,7 @@ namespace AWS.CONTROL
 							if ((m_CollectDt.Minute <= nowDt.Minute) && (nowDt.Second > 30))
 							{
 								Connect();
-								Thread.Sleep(1000);
+								Thread.Sleep(3000);
 								m_CollectDt = new System.DateTime(nowDt.Year, nowDt.Month, nowDt.Day, nowDt.Hour, nowDt.Minute, 35);
 								
 								// 현재 데이터를 요구한다								
@@ -942,7 +942,7 @@ namespace AWS.CONTROL
                         if (result == null || result.Length <= 0)
                         {
 							Connect();
-							Thread.Sleep(1000);
+							Thread.Sleep(3000);
 
                             SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
                             isLostRequest = true;
