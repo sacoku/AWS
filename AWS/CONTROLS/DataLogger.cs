@@ -83,33 +83,6 @@ namespace AWS.CONTROL
             environment.PASSWORD = AWS.Config.AWSConfig.sValue[idx].Passwd;
 
 			this.iPanelIdx = idx;
-            try
-            {
-                IPAddress ipAddress = IPAddress.Parse(environment.IP);
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, environment.PORT);
-            
-                // Create a TCP/IP socket.
-                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-                ClientSocket = new AsynchronousSocket(client, remoteEP, iPanelIdx);
-                ClientSocket.Received += new ReceiveDelegate(OnReceived);
-			}
-            catch (Exception ex)
-            {
-                //this.mainForm.displayStatus("컴포트 오픈 실패!", Color.Red);
-                this.mainForm.displayStatus("[I:"+iPanelIdx+"] 접속 실패!", Color.Red);
-                iLog.Error(AWSConfig.sValue[iPanelIdx].Name + " : " + ex.ToString());
-            }
-
-            try
-            {
-                ClientSocket.Disconnected += new DisconnectDelegate(OnDisconnected);
-            }
-            catch (Exception E)
-            {
-                iLog.Error(AWSConfig.sValue[iPanelIdx].Name + " : " + E.ToString());
-            }
-                  
 
             m_CollectDt = new System.DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, 35);
             m_DateTimeCommandDt = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, 0, 30);          // 각시간당 20초에 시간 설정 명령을 보내기 위해서 설정
@@ -176,15 +149,8 @@ namespace AWS.CONTROL
 
         }
 
-        private void reConnect()
+        private void Connect()
         {
-			/*
-			if(ClientSocket != null && ClientSocket.Connected())
-			{
-				DisConnect();
-			}
-			*/
-
 			try
 			{
 				if (ClientSocket == null)
@@ -257,23 +223,6 @@ namespace AWS.CONTROL
 
 				while (flag)
 				{
-					//add by sacoku 161227
-					/*
-					if(!ClientSocket.Connected())
-					{
-						if (iRetryConnCnt > 5)
-						{
-							iLog.Error("재접속 횟수가 10회를 초과하여 접속 시도를 종료합니다.");
-							this.CloseLogger();
-							return;
-						}
-
-						reConnect();
-						Thread.Sleep(5000);
-						continue;
-					}
-					*/
-
 					if (isPause)
 					{
 						Thread.Sleep(5000);
@@ -284,7 +233,7 @@ namespace AWS.CONTROL
 					bool bFlag = false;
 					if (m_DateTimeCommandDt < DateTime.Now)
 					{
-						reConnect();
+						Connect();
 						Thread.Sleep(1000);
 
 						m_DateTimeCommandDt = DateTime.Now.AddHours(1);
@@ -303,7 +252,7 @@ namespace AWS.CONTROL
 							DateTime nowDt = DateTime.Now;
 							if ((m_CollectDt.Minute <= nowDt.Minute) && (nowDt.Second > 30))
 							{
-								reConnect();
+								Connect();
 								Thread.Sleep(1000);
 								m_CollectDt = new System.DateTime(nowDt.Year, nowDt.Month, nowDt.Day, nowDt.Hour, nowDt.Minute, 35);
 								
@@ -363,7 +312,7 @@ namespace AWS.CONTROL
 					{
 						iLog.Info("요청 대기중입니다.");
 					}
-					cnt++;
+
 					Thread.Sleep(AWS.Config.AWSConfig.CDP * 1000);
 				}
 			}
@@ -921,23 +870,6 @@ namespace AWS.CONTROL
 
 			while (flag)
 			{
-				//add by sacoku 161227
-				/*
-				if (!ClientSocket.Connected())
-				{
-					if (iRetryConnCnt > 5)
-					{
-						iLog.Error("재접속 횟수가 10회를 초과하여 접속 시도를 종료합니다.");
-						this.CloseLogger();
-						return;
-					}
-
-					reConnect();
-					Thread.Sleep(5000);
-					continue;
-				}
-				*/
-
 				bIsReadyToRun = true;
 				if (bIsReadyToRun)
 				{
@@ -946,7 +878,6 @@ namespace AWS.CONTROL
 				}
 
 				Thread.Sleep(AWSConfig.RCSD * 1000);
-
 			}
 		}
 
@@ -1010,7 +941,9 @@ namespace AWS.CONTROL
 
                         if (result == null || result.Length <= 0)
                         {
-							reConnect();
+							Connect();
+							Thread.Sleep(1000);
+
                             SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
                             isLostRequest = true;
                             iLog.Info(    "[I: " + iPanelIdx 
