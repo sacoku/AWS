@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define TEST
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO.Ports;
@@ -18,6 +20,8 @@ using System.Net;
 using System.Data.OleDb;
 using System.Data;
 using AWS.Config;
+
+
 
 namespace AWS.CONTROL
 {
@@ -824,12 +828,10 @@ namespace AWS.CONTROL
 
                     iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + result + " 과거 데이터 수신");
 
-					/*
                     Thread WeatherProcThread = new Thread(new ParameterizedThreadStart(saveData.saveLastData));
                     WeatherProcThread.Name = "WeatherThread";
                     WeatherProcThread.IsBackground = true;
                     WeatherProcThread.Start(iPanelIdx);
-					*/
 				}
 
 				bResult = true;
@@ -961,6 +963,8 @@ namespace AWS.CONTROL
 										+ ":" + startDateTime.Minute 
 										+ " 데이터 요청");
 
+#if (TEST)
+
 							Thread.Sleep(AWSConfig.RCSOD * 1000);
 							while (isLostRequest == true)
                             {
@@ -974,8 +978,10 @@ namespace AWS.CONTROL
 
 								Thread.Sleep(1000);
 							}
+#endif
                         }
 
+#if (TEST)
 						if (isLostRequest == false)
 						{	
 							startDateTime = startDateTime.AddMinutes(+1);
@@ -987,9 +993,13 @@ namespace AWS.CONTROL
 						{
 							iLog.Debug("응답을 받지 못해서 재요청 합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
 						}
-                    }
+#else
+							startDateTime = startDateTime.AddMinutes(+1);
+							Thread.Sleep(AWSConfig.RCSOD * 1000);
+#endif
+						}
 
-                    if(isPauseMode) Resume();
+						if (isPauseMode) Resume();
                 }
             }
             catch (Exception e)
