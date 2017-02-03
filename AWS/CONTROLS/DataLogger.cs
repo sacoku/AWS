@@ -153,6 +153,12 @@ namespace AWS.CONTROL
         {
 			try
 			{
+				if(ClientSocket != null)
+				{
+					ClientSocket.Close();
+					ClientSocket = null;
+				}
+
 				if (ClientSocket == null)
 				{
 					lock (connLock)
@@ -169,7 +175,6 @@ namespace AWS.CONTROL
 						ClientSocket.Disconnected += new DisconnectDelegate(OnDisconnected);
 					}
 					iRetryConnCnt++;
-					iLog.Info("연결되었습니다. ");
 					
 				} else
 				{
@@ -234,7 +239,7 @@ namespace AWS.CONTROL
 					if (m_DateTimeCommandDt < DateTime.Now)
 					{
 						Connect();
-						Thread.Sleep(3000);
+						//Thread.Sleep(3000);
 
 						m_DateTimeCommandDt = DateTime.Now.AddHours(1);
 						DateTime SyncDateTime = DateTime.Now;
@@ -253,7 +258,7 @@ namespace AWS.CONTROL
 							if ((m_CollectDt.Minute <= nowDt.Minute) && (nowDt.Second > 30))
 							{
 								Connect();
-								Thread.Sleep(3000);
+								//Thread.Sleep(3000);
 								m_CollectDt = new System.DateTime(nowDt.Year, nowDt.Month, nowDt.Day, nowDt.Hour, nowDt.Minute, 35);
 								
 								// 현재 데이터를 요구한다								
@@ -511,15 +516,14 @@ namespace AWS.CONTROL
                         datas[26] += datas[i];
                     }
 
-                    if (this.ClientSocket.Connected())
-                    {
-                        //AWS.UTIL.CommonUtil.DumpBytes(datas, dumpbytes);
-                        ClientSocket.Send(datas);
-                    }
-                    //else
-                    //    reConnect();
+					while (!this.ClientSocket.Connected())
+					{
+						iLog.Debug("전송 전 연결 대기 중입니다.");
+						Thread.Sleep(100);
+					}
 
-
+                    ClientSocket.Send(datas);
+                    
                     this.mainForm.setTXRX(1);
                     // 현재 데이터를 요구한다
                     string[] data = new string[2];

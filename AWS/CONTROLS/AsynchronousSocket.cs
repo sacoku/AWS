@@ -6,11 +6,13 @@ using System.Threading;
 using System.Diagnostics;
 using System.IO;
 using log4net;
+using AWS.Config;
 
 namespace AWS.CONTROLS
 {
-    // 델리게이트(delegate) 선언
-    public delegate void DisconnectDelegate(object sender, EventArgs e);		// 접속해제시 Delegate
+	// 델리게이트(delegate) 선언
+	public delegate void ConnectDelegate(object sender, EventArgs e);        // 접속해제시 Delegate
+	public delegate void DisconnectDelegate(object sender, EventArgs e);		// 접속해제시 Delegate
     public delegate void ReceiveDelegate(object sender, ReceivedEventArgs e);	// 데이터 받을시에 Delegate
     
     // MessageEventArgs 정의
@@ -45,13 +47,16 @@ namespace AWS.CONTROLS
         
         public event DisconnectDelegate Disconnected = null;		// 접속해제시 이벤트
         public event ReceiveDelegate Received = null;       // 데이터 받았을때 이벤트
+		public event ConnectDelegate AfterConnect = null;
         private IPEndPoint iep = null;
+		private int nIdx = 0;
 
 		ILog iLog = null;
 
         public AsynchronousSocket(Socket sock, IPEndPoint remoteEP, int idx)
         {
 			iLog = log4net.LogManager.GetLogger("Dev" + idx);
+			nIdx = idx;
 
 			buffer = new byte[BufferSize];
             workSocket = sock;
@@ -70,7 +75,15 @@ namespace AWS.CONTROLS
 
 				// 접속된 소켓에 비동기 Receive 설정
 				this.workSocket.BeginReceive(buffer, 0, AsynchronousSocket.BufferSize, 0, new AsyncCallback(ReadCallback), this);
-            }
+				iLog.Info(AWSConfig.sValue[nIdx].Name + " 로거에 연결 되었습니다.");
+
+				if (AfterConnect != null)
+				{
+					EventArgs e = new EventArgs();
+					AfterConnect(this, e);
+				}
+
+			}
             catch (SocketException ex)
             {
                 iLog.Error(ex.ToString());
