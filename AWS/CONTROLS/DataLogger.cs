@@ -870,7 +870,7 @@ namespace AWS.CONTROL
         public void StartWatchDog()
         {
 
-			Thread.Sleep(20000); //Delay를 주고 시작한다.
+			Thread.Sleep(10000); //Delay를 주고 시작한다.
 
 			while (flag)
 			{
@@ -946,7 +946,6 @@ namespace AWS.CONTROL
                         if (result == null || result.Length <= 0)
                         {
 							Connect();
-							Thread.Sleep(3000);
 
                             SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
                             isLostRequest = true;

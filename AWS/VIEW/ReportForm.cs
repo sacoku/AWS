@@ -178,7 +178,7 @@ namespace AWS.VIEW
                 SensortsReportGrid[1, 0].Column.Width = colWidth * 3;
 
                 int idx = 1;
-                columnHeader = new SourceGrid.Cells.ColumnHeader("기온");
+                columnHeader = new SourceGrid.Cells.ColumnHeader("기온(℃)");
                 columnHeader.View = viewColumnHeader;
                 columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -197,7 +197,7 @@ namespace AWS.VIEW
                 SensortsReportGrid[1, idx].ColumnSpan = 3;
                 idx += 3;
 
-                columnHeader = new SourceGrid.Cells.ColumnHeader("풍속");
+                columnHeader = new SourceGrid.Cells.ColumnHeader("풍속(m/s)");
                 columnHeader.View = viewColumnHeader;
                 columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -206,7 +206,7 @@ namespace AWS.VIEW
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
                 SensortsReportGrid[1, idx].ColumnSpan = 3; idx += 3;
 
-                columnHeader = new SourceGrid.Cells.ColumnHeader("강우");
+                columnHeader = new SourceGrid.Cells.ColumnHeader("강우량(mm)");
                 columnHeader.View = viewColumnHeader;
                 columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -223,7 +223,7 @@ namespace AWS.VIEW
                 SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
                 idx += 1;
 
-                columnHeader = new SourceGrid.Cells.ColumnHeader("습도");
+                columnHeader = new SourceGrid.Cells.ColumnHeader("습도(%)");
                 columnHeader.View = viewColumnHeader;
                 columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -232,7 +232,7 @@ namespace AWS.VIEW
                 SensortsReportGrid[1, idx].ColumnSpan = 3; idx += 3;
 
 
-               columnHeader = new SourceGrid.Cells.ColumnHeader("일조");
+               columnHeader = new SourceGrid.Cells.ColumnHeader("일조(hour)");
                 columnHeader.View = viewColumnHeader;
                 columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -242,7 +242,7 @@ namespace AWS.VIEW
                 idx += 1;
 
 
-                columnHeader = new SourceGrid.Cells.ColumnHeader("시정");
+                columnHeader = new SourceGrid.Cells.ColumnHeader("시정(m)");
                 columnHeader.View = viewColumnHeader;
                 columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -368,7 +368,7 @@ namespace AWS.VIEW
 
 				SourceGrid.Cells.ColumnHeader columnHeader;
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("시간");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("시간(℃)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
