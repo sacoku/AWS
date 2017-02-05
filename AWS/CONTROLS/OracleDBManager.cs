@@ -165,7 +165,8 @@ namespace AWS.CONTROLS
 								 + "       ," + s_fan + "																			\n"
 								 + ")																										";
 
-				iLog.Debug("[QUERY]\n" + query);
+				//iLog.Debug("[QUERY]\n" + query);
+				iLog.Info("오라클 AWSTAMP" + AWSConfig.sValue[idx].LocNum + " INSERT 쿼리 실행.");
 
 				OracleCommand cmd = new OracleCommand();
 				cmd.Connection = conn;
@@ -192,7 +193,8 @@ namespace AWS.CONTROLS
 								 + "WHERE														\n"
 								 + "SLOCALCODE = '"+localcode+"'						    ";
 
-				iLog.Debug("[QUERY]\n" + query);
+				//iLog.Debug("[QUERY]\n" + query);
+				iLog.Info("오라클 LOCALINFO 마지막 업데이트 시간 조회 쿼리 실행.");
 
 				OracleCommand cmd = new OracleCommand();
 				cmd.Connection = conn;
@@ -231,8 +233,9 @@ namespace AWS.CONTROLS
 								 + "WHERE																		\n"
 								 + "SLOCALCODE = '" + localcode + "'									    ";
 
-				iLog.Debug("[QUERY]\n" + query);
-				
+				//iLog.Debug("[QUERY]\n" + query);
+				iLog.Info("오라클 LOCALINFO 마지막 업데이트 시간 UPDATE 쿼리 실행.");
+
 				OracleCommand cmd = new OracleCommand();
 				cmd.Connection = conn;
 				cmd.CommandText = query;

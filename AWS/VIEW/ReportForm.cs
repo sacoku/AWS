@@ -19,6 +19,11 @@ using AWS.CONTROLS;
 using System.Diagnostics;
 using log4net;
 using AWS.Config;
+using System.Runtime.InteropServices;
+using System.Threading;
+using NPOI.XSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.SS.Util;
 
 namespace AWS.VIEW
 {
@@ -131,7 +136,7 @@ namespace AWS.VIEW
 				SensortsReportGrid.RowsCount = 3;
 
 				//Create the grid
-				SensortsReportGrid.BorderStyle = BorderStyle.FixedSingle;
+				SensortsReportGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 
                 SensortsReportGrid.ColumnsCount = columnNum;
                 SensortsReportGrid.FixedRows = 3;
@@ -283,7 +288,7 @@ namespace AWS.VIEW
 
                                 columnHeader = new SourceGrid.Cells.ColumnHeader("최소");
                                 columnHeader.View = viewColumnHeader;
-                                columnHeader.View.Font = new Font(FontFamily.GenericSansSerif, 8, FontStyle.Bold);
+                                columnHeader.View.Font = new Font(System.Drawing.FontFamily.GenericSansSerif, 8, FontStyle.Bold);
                                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
 
                                 SensortsReportGrid[2, i] = columnHeader;
@@ -292,7 +297,7 @@ namespace AWS.VIEW
 
                                 columnHeader = new SourceGrid.Cells.ColumnHeader("최고");
                                 columnHeader.View = viewColumnHeader;
-                                columnHeader.View.Font = new Font(FontFamily.GenericSansSerif, 8, FontStyle.Bold);
+                                columnHeader.View.Font = new Font(System.Drawing.FontFamily.GenericSansSerif, 8, FontStyle.Bold);
                                 columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
 
                                 SensortsReportGrid[2, i] = columnHeader;
@@ -329,7 +334,7 @@ namespace AWS.VIEW
 				this.SensortsReportGrid.Refresh();
 				SensortsReportGrid.RowsCount = 2;
 				//Create the grid
-				SensortsReportGrid.BorderStyle = BorderStyle.FixedSingle;
+				SensortsReportGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 
 				SensortsReportGrid.ColumnsCount = columnNum;
 				SensortsReportGrid.FixedRows = 2;
@@ -377,7 +382,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, 0].Column.Width = colWidth * 3;
 
 				int idx = 1;
-				columnHeader = new SourceGrid.Cells.ColumnHeader("기온");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("기온(℃)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -395,7 +400,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
 				idx += 1;
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("풍속");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("풍속(m/s)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -404,7 +409,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
 				idx += 1;
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("강우");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("강우량(mm)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -413,7 +418,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
 				idx += 1;
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("습도");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("습도(%)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -422,7 +427,7 @@ namespace AWS.VIEW
 				idx += 1;
 
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("일조");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("일조(hour)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -432,7 +437,7 @@ namespace AWS.VIEW
 				idx += 1;
 
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("시정");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("시정(m)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -463,7 +468,7 @@ namespace AWS.VIEW
 				this.SensortsReportGrid.Refresh();
 				SensortsReportGrid.RowsCount = 2;
 				//Create the grid
-				SensortsReportGrid.BorderStyle = BorderStyle.FixedSingle;
+				SensortsReportGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 
 				SensortsReportGrid.ColumnsCount = columnNum;
 				SensortsReportGrid.FixedRows = 2;
@@ -511,7 +516,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, 0].Column.Width = colWidth * 3;
 
 				int idx = 1;
-				columnHeader = new SourceGrid.Cells.ColumnHeader("기온");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("기온(℃)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -529,7 +534,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
 				idx += 1;
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("풍속");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("풍속(m/s)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -538,7 +543,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
 				idx += 1;
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("강우");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("강우량(mm)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -547,7 +552,7 @@ namespace AWS.VIEW
 				SensortsReportGrid[1, idx].Column.Width = colWidth * 3;
 				idx += 1;
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("습도");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("습도(%)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -556,7 +561,7 @@ namespace AWS.VIEW
 				idx += 1;
 
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("일조");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("일조(hour)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -566,7 +571,7 @@ namespace AWS.VIEW
 				idx += 1;
 
 
-				columnHeader = new SourceGrid.Cells.ColumnHeader("시정");
+				columnHeader = new SourceGrid.Cells.ColumnHeader("시정(m)");
 				columnHeader.View = viewColumnHeader;
 				columnHeader.View.Font = new Font("굴림", 8, FontStyle.Bold);
 				columnHeader.View.TextAlignment = DevAge.Drawing.ContentAlignment.MiddleCenter;
@@ -1122,6 +1127,127 @@ namespace AWS.VIEW
 			ComboBoxItem item = comboBox2.SelectedItem as ComboBoxItem;
 			eMode = item.Code;
 			initGrid(DateTime.Now, 0);
+		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				int nHeaderRowCnt = 0;
+				if (eMode == (int)RPT_VIEW_MODE.TIME_MODE)
+				{
+					nHeaderRowCnt = 3;
+				}
+				else
+				{
+					nHeaderRowCnt = 2;
+				}
+
+				if (SensortsReportGrid.RowsCount == nHeaderRowCnt)
+				{
+					MessageBox.Show("데이터가 존재하지 않습니다.");
+					return;
+				}
+
+				SaveFileDialog savePanel = new SaveFileDialog();
+				//savePanel.InitialDirectory = @"d:\";
+				savePanel.Filter = "xlsx 파일 (*.xlsx)|*.xlsx|xls (*.xls)|*.xls | All files (*.*)|(*.*)";
+				if (savePanel.ShowDialog() == DialogResult.OK)
+				{
+					using(FileStream stream = new FileStream(savePanel.FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+					{
+						IWorkbook wb = new XSSFWorkbook();
+						ISheet sheet = wb.CreateSheet("Sheet1");
+						ICreationHelper cH = wb.GetCreationHelper();
+
+						if (nHeaderRowCnt == 3)
+						{
+							IRow r = sheet.CreateRow(0);
+							ICell c = r.CreateCell(0);
+
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[0, 0].Value.ToString()));
+
+							CellRangeAddress cra = new CellRangeAddress(0, 0, 0, columnNum - 1);
+							sheet.AddMergedRegion(cra);
+							
+							r = sheet.CreateRow(1);
+
+							int c_idx = 0;
+							c = r.CreateCell(0);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, 0].Value.ToString()));
+
+							c_idx += 1;
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							cra = new CellRangeAddress(1, 1, c_idx, c_idx + 2); c_idx += 3;
+							sheet.AddMergedRegion(cra);
+
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							cra = new CellRangeAddress(1, 1, c_idx, c_idx + 2); c_idx += 3;
+							sheet.AddMergedRegion(cra);
+
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							cra = new CellRangeAddress(1, 1, c_idx, c_idx + 2);  c_idx += 3;
+							sheet.AddMergedRegion(cra);
+
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							c_idx += 1;
+
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							c_idx += 1;
+							
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							cra = new CellRangeAddress(1, 1, c_idx, c_idx + 2); c_idx += 3;
+							sheet.AddMergedRegion(cra);
+
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							c_idx += 1;							
+
+							c = r.CreateCell(c_idx);
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[1, c_idx].Value.ToString()));
+							c_idx += 1;							
+						} else
+						{
+							IRow r = sheet.CreateRow(0);
+							ICell c = r.CreateCell(0);
+
+							c.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[0, 0].Value.ToString()));
+
+							CellRangeAddress cra = new CellRangeAddress(0, 0, 0, columnNum - 1);
+							sheet.AddMergedRegion(cra);							
+						}
+
+						nHeaderRowCnt--;
+
+						for (int i = nHeaderRowCnt; i < SensortsReportGrid.RowsCount; i++)
+						{
+							IRow row = sheet.CreateRow(i);
+							for (int j = 0; j < columnNum; j++)
+							{
+								NPOI.SS.UserModel.ICell cell = row.CreateCell(j);								
+								if(SensortsReportGrid[i, j].Value != null)
+									cell.SetCellValue(cH.CreateRichTextString(SensortsReportGrid[i, j].Value.ToString()));
+								else
+									cell.SetCellValue(cH.CreateRichTextString(""));
+
+								//iLog.Debug("Value[" + i + "] : " + SensortsReportGrid[i, j].Value.ToString());
+							}
+						}
+						wb.Write(stream);
+					}
+				}
+
+			}
+			catch (Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
 		}
 	}
 }

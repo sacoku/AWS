@@ -520,9 +520,12 @@ namespace AWS.CONTROL
                         datas[26] += datas[i];
                     }
 
+					int j = 0;
 					while (!this.ClientSocket.Connected())
 					{
-						iLog.Debug("전송 전 연결 대기 중입니다.");
+						if ( (j%10) == 0)
+							iLog.Debug("전송 전 연결 대기 중입니다.");
+						j++;
 						Thread.Sleep(100);
 					}
 
@@ -752,9 +755,9 @@ namespace AWS.CONTROL
 							+ (int)saveData.kma2.Month 
 							+ "/" 
 							+ (int)saveData.kma2.Day 
-							+ "/" 
+							+ " " 
 							+ (int)saveData.kma2.Hour 
-							+ "/" 
+							+ ":" 
 							+ (int)saveData.kma2.Minute 
 							+ "]");
 
@@ -778,17 +781,17 @@ namespace AWS.CONTROL
                     KMA2 displayKMA2 = new KMA2();
                     displayKMA2 = KMA2.SetByte(Data);
 
-                    // 데이터를 받으면 무조건 시간을 증가 시킨다.
-                    String resultData = this.saveData.getResult(iPanelIdx);
+					iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + receive.ToString("yyyy-MM-dd hh:mm") + " 현재 데이터 수신");
+
+					// 데이터를 받으면 무조건 시간을 증가 시킨다.
+					String resultData = this.saveData.getResult(iPanelIdx);
 
                     String[] receivedTime = resultData.Split(',');
 
                     dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                     dispalyData[1] = receivedTime[1] + "현재 데이터 수신";
 
-                    iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + receivedTime[1] + " 현재 데이터 수신");
-
-                    this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
+					this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
 
                     //SafeInvokeHelper.Invoke(this.mainForm.displayForm, "DisplayData", displayKMA2);
                     SafeInvokeHelper.Invoke(this.mainForm.displayForm2, "DisplayData", displayKMA2, iPanelIdx);
@@ -808,8 +811,16 @@ namespace AWS.CONTROL
                     saveData.lastKma2 = KMA2.SetByte(Data); // 기상데이터 프로토콜에 데이터를 넣는다.  
                     saveData.ByteChangAllLastData();
 
-                    // 데이터를 받으면 무조건 시간을 증가 시킨다.
-                    String resultData = this.saveData.getResult(iPanelIdx);
+					DateTime lastReceive = new DateTime(2000 + ((int)saveData.lastKma2.Year)
+												, (int)saveData.lastKma2.Month
+												, (int)saveData.lastKma2.Day
+												, (int)saveData.lastKma2.Hour
+												, (int)saveData.lastKma2.Minute, 0);
+
+					iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + lastReceive.ToString("yyyy-MM-dd hh:mm") + " 과거 데이터 수신");
+
+					// 데이터를 받으면 무조건 시간을 증가 시킨다.
+					String resultData = this.saveData.getResult(iPanelIdx);
                     String[] dispalyData = new String[2];
                     String[] receivedTime = resultData.Split(',');
 
@@ -825,8 +836,6 @@ namespace AWS.CONTROL
 
                     dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                     dispalyData[1] = result + "과거 데이터 수신";
-
-                    iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + result + " 과거 데이터 수신");
 
                     Thread WeatherProcThread = new Thread(new ParameterizedThreadStart(saveData.saveLastData));
                     WeatherProcThread.Name = "WeatherThread";
@@ -889,7 +898,6 @@ namespace AWS.CONTROL
 
         public void RecoverLostData(DateTime dt, Boolean isPauseMode)
         {
-            int nFailCnt = 0;
             OleDbConnection con = null;
             OleDbCommand cmd = null;
 
@@ -909,6 +917,10 @@ namespace AWS.CONTROL
 
                 DataSet readDataSet = new DataSet();
 
+
+				dt = dt.AddMinutes(-5);
+				iLog.Info("복구 기준 시간 : " + dt.ToString("yyyy-MM-dd HH:mm"));
+
 				StringBuilder selectQuery = new StringBuilder()
 									.Append("SELECT										\n")
 									.Append("         RECEIVETIME						\n")
@@ -921,9 +933,10 @@ namespace AWS.CONTROL
 									.Append("        ,SUNSHINE							\n")
 									.Append("        ,VISIBILITY						\n")
 									.Append("FROM AWS_MIN								\n")
-									.Append("WHERE DEV_IDX = ").Append(iPanelIdx.ToString());
+									.Append("WHERE DEV_IDX = ").Append(iPanelIdx.ToString())
+									.Append("  AND RECEIVETIME < #" + dt.ToString("yyyy-MM-dd HH:mm:00") + "#");
 
-                iLog.Debug(selectQuery);
+                //iLog.Debug(selectQuery);
                 con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + DBPath);
                 cmd = new OleDbCommand(selectQuery.ToString(), con);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
@@ -931,19 +944,20 @@ namespace AWS.CONTROL
                 con.Open();
                 myDataAdapter.Fill(readDataSet, "aws_min");
 
-                if (readDataSet.Tables[0].Rows.Count > 0)
+				if (readDataSet.Tables[0].Rows.Count > 0)
                 {
 
                     DateTime startDateTime = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0);
-                    TimeSpan ts = dt - startDateTime;
-                    int lostCnt = 0;
+                    //TimeSpan ts = dt - startDateTime;
 
                     if(isPauseMode) Pause();
 
-                    for (int rows = 0; rows < (ts.TotalMinutes + 1);)
+					//for (int rows = 0; rows < (ts.TotalMinutes + 1);)
+					int rows = 0;
+					while(DateTime.Compare(startDateTime, dt) < 0)
                     {
 						if (this.flag == false) break;
-                        DataRow[] result = readDataSet.Tables[0].Select("receivetime = '" + startDateTime + "'");
+                        DataRow[] result = readDataSet.Tables[0].Select("receivetime = #" + startDateTime.ToString("yyyy-MM-dd HH:mm") + "#");
 
                         if (result == null || result.Length <= 0)
                         {
@@ -963,6 +977,8 @@ namespace AWS.CONTROL
 										+ ":" + startDateTime.Minute 
 										+ " 데이터 요청");
 
+							rows++;
+
 #if (TEST)
 
 							Thread.Sleep(AWSConfig.RCSOD * 1000);
@@ -979,7 +995,7 @@ namespace AWS.CONTROL
 								Thread.Sleep(1000);
 							}
 #endif
-                        }
+						}
 
 #if (TEST)
 						if (isLostRequest == false)
@@ -994,12 +1010,17 @@ namespace AWS.CONTROL
 							iLog.Debug("응답을 받지 못해서 재요청 합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
 						}
 #else
-							startDateTime = startDateTime.AddMinutes(+1);
-							Thread.Sleep(AWSConfig.RCSOD * 1000);
+							startDateTime = startDateTime.AddMinutes(+1); 
+							if (result == null || result.Length <= 0)
+								Thread.Sleep(AWSConfig.RCSOD * 1000);
+							else
+								Thread.Sleep(10);
 #endif
-						}
+					}
 
-						if (isPauseMode) Resume();
+					if (isPauseMode) Resume();
+
+					iLog.Info("복구된 데이터는 총 " + rows + " 건 입니다.");
                 }
             }
             catch (Exception e)

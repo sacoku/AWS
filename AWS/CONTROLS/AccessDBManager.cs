@@ -109,7 +109,8 @@ namespace AWS.CONTROLS
                                                      + "                  ,SUNSHINE DOUBLE							\n"
                                                      + "                  ,VISIBILITY DOUBLE						\n"
                                                      + ")";
-                            iLog.Debug(connCmd.CommandText);
+							//iLog.Debug(connCmd.CommandText);
+							iLog.Info("AWS_MIN 테이블 생성 쿼리 실행.");
                             connCmd.ExecuteNonQuery();
 
 							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
@@ -175,7 +176,8 @@ namespace AWS.CONTROLS
 													 + "                  ,VISIBILITY DOUBLE						\n"
 													 + "                  ,CHG_TIME DATETIME						\n"
 													 + ")";
-							iLog.Debug(connCmd.CommandText);
+							//iLog.Debug(connCmd.CommandText);
+							iLog.Info("AWS_MONTH 테이블 생성 쿼리 실행.");
 							connCmd.ExecuteNonQuery();
 
 							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
@@ -214,7 +216,8 @@ namespace AWS.CONTROLS
 					string sql = "INSERT INTO AWS_MONTH( AWS_DATE )					\n"
 							   + "VALUES('"+ dt.ToString("yyyy-MM-dd") +"')";
 
-					iLog.Debug("[QUERY]\n" + sql);
+					//iLog.Debug("[QUERY]\n" + sql);
+					iLog.Info("AWS_MONTH INSERT 쿼리 실행.");
 					OleDbCommand cmd = new OleDbCommand(sql, conn);
 					//conn.Open();
 					cmd.ExecuteNonQuery();
@@ -239,14 +242,15 @@ namespace AWS.CONTROLS
                 string sql = "SELECT                                                   \n"
 							 + "         MAX(ATMO) AS MIN_ATMO                 \n"
 							 + "        ,MAX(TEMP) AS MIN_TEMP                 \n"
-                             + "        ,MAX(WS) AS MIN_WS                       \n"
-                             + "        ,MAX(WD) AS MIN_WD                      \n"
+							 + "        ,MAX(WD) AS MIN_WD                      \n"
+							 + "        ,MAX(WS) AS MIN_WS                       \n"
                              + "        ,MAX(HUMIDITY) AS MIN_HUMIDITY     \n"
                              + "FROM AWS_MIN                                          ";
 
-                iLog.Debug("[QUERY]\n" + sql);
+				//iLog.Debug("[QUERY]\n" + sql);
+				iLog.Info("AWS_MIN 최대값 조회 쿼리 실행.");
 
-                OleDbCommand cmd = new OleDbCommand(sql, conn);
+				OleDbCommand cmd = new OleDbCommand(sql, conn);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
                 DataSet readDataSet = new DataSet();
 
@@ -285,14 +289,15 @@ namespace AWS.CONTROLS
                 string sql = "SELECT                                                   \n"
 							 + "         MIN(ATMO) AS MIN_ATMO                 \n"
 							 + "        ,MIN(TEMP) AS MIN_TEMP                 \n"
-                             + "        ,MIN(WS) AS MIN_WS                       \n"
-                             + "        ,MIN(WD) AS MIN_WD                      \n"
+							 + "        ,MIN(WD) AS MIN_WD                      \n"
+							 + "        ,MIN(WS) AS MIN_WS                       \n"
                              + "        ,MIN(HUMIDITY) AS MIN_HUMIDITY     \n"
                              + "FROM AWS_MIN                                          ";
 
-                iLog.Debug("[QUERY]\n" + sql);
+				//iLog.Debug("[QUERY]\n" + sql);
+				iLog.Info("AWS_MIN 최소값 조회 쿼리 실행.");
 
-                OleDbCommand cmd = new OleDbCommand(sql, conn);
+				OleDbCommand cmd = new OleDbCommand(sql, conn);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
                 DataSet readDataSet = new DataSet();
 
@@ -382,9 +387,10 @@ namespace AWS.CONTROLS
                             + "," + sunshine
                             + "," + visibility
                             + ") ";
-                iLog.Debug("[QUERY]\n" + sql);
+				//iLog.Debug("[QUERY]\n" + sql);
+				iLog.Info("AWS_MIN 데이터 INSERT 쿼리 실행.");
 
-                OleDbCommand cmd = new OleDbCommand(sql, conn);
+				OleDbCommand cmd = new OleDbCommand(sql, conn);
                 //conn.Open();
                 cmd.ExecuteNonQuery();
             }
@@ -407,15 +413,16 @@ namespace AWS.CONTROLS
 				string sql = "SELECT										\n"
 							 + "         AVG(ATMO) AS AVG_ATMO				\n"
 							 + "        ,AVG(TEMP) AS AVG_TEMP				\n"
-							 + "        ,AVG(WS) AS AVG_WS					\n"
 							 + "        ,AVG(WD) AS AVG_WD					\n"
+							 + "        ,AVG(WS) AS AVG_WS					\n"
 							 + "        ,AVG(RAIN) AS AVG_RAIN				\n"
 							 + "        ,AVG(HUMIDITY) AS AVG_HUMIDITY		\n"
 							 + "        ,AVG(SUNSHINE) AS AVG_SUNSHINE		\n"
 							+ "         ,AVG(VISIBILITY) AS AVG_VISIBILITY	\n"
 							 + "FROM AWS_MIN								  ";
 
-				iLog.Debug("[QUERY]\n" + sql);
+				//iLog.Debug("[QUERY]\n" + sql);
+				iLog.Info("AWS_MIN 데이터 평균 조회 쿼리 실행.");
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
 				OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
@@ -426,7 +433,6 @@ namespace AWS.CONTROLS
 				if (readDataSet.Tables[0].Rows.Count > 0)
 				{
 					DataRow row = readDataSet.Tables[0].Rows[0];
-					iLog.Debug("rows : " + row.ItemArray.Length);
 					value = new double[row.ItemArray.Length];
 					for (int i = 0; i < row.ItemArray.Length; i++)
 					{
@@ -458,8 +464,8 @@ namespace AWS.CONTROLS
 							string.Format("UPDATE AWS_MONTH SET						\n" +
 										  "         ATMO = {0:0}	  				\n" +
 										  "        ,TEMP = {1:F1}					\n" +
-										  "        ,WD = {2}						\n" +
-										  "        ,WS = {3}						\n" +
+										  "        ,WD = {2:0.0}					\n" +
+										  "        ,WS = {3:0.0}					\n" +
 										  "        ,RAIN = {4}						\n" +
 									  	  "        ,HUMIDITY = {5:0}				\n" +
 										  "        ,SUNSHINE = {6:0.0}				\n" +
@@ -474,7 +480,8 @@ namespace AWS.CONTROLS
 							values[6],
 							values[7],
 							dt.ToString("yyyy-MM-dd"));
-				iLog.Debug("[QUERY]\n" + sql);
+				//iLog.Debug("[QUERY]\n" + sql);
+				iLog.Info("AWS_MONTH UPDATE 쿼리 실행.["+ dt.ToString("yyyy-MM-dd") + "]");
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
 				//conn.Open();
