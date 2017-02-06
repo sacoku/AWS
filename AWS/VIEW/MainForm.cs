@@ -21,7 +21,6 @@ namespace AWS
         public DisplayForm displayForm = null;
         public ReportForm reportForm = null;
 		public GraphForm graphForm = null;
-		public HistoryForm historyForm = null;
 
         public DataLogger[] logger = null;
 		public DataLogger[] rLogger = null;
@@ -80,18 +79,15 @@ namespace AWS
 				this.reportForm = new ReportForm(this);
 				this.displayForm2 = new DisplayForm2(this);
 				this.graphForm = new GraphForm(this);
-				this.historyForm = new HistoryForm(this);
 
 				this.displayForm.ControlBox = false;
 				this.displayForm2.ControlBox = false;
 				this.graphForm.ControlBox = false;
-				this.historyForm.ControlBox = false;
 
 				this.displayForm.MdiParent = this;
 				this.reportForm.MdiParent = this;
 				this.displayForm2.MdiParent = this;
 				this.graphForm.MdiParent = this;
-				this.historyForm.MdiParent = this;
 
 				//this.displayForm.Show();
 				this.displayForm2.Show();
@@ -99,7 +95,6 @@ namespace AWS
 				this.displayForm2.Dock = DockStyle.Fill;
 				this.reportForm.Dock = DockStyle.Fill;
 				this.graphForm.Dock = DockStyle.Fill;
-				this.historyForm.Dock = DockStyle.Fill;
 
 				checkAccessFile();
 
@@ -247,15 +242,16 @@ namespace AWS
 			{
 				Form activeChild = this.ActiveMdiChild;
 
+				MessageBox.Show("준비중입니다.");
+
+				/*
 				if (activeChild.Name != "HistoryForm")
 				{
-					//this.displayForm.Show();
-					//this.displayForm.BringToFront();
-					//this.displayForm.StartPosition = FormStartPosition.CenterScreen;
 					this.historyForm.Show();
 					this.historyForm.BringToFront();
 					this.historyForm.StartPosition = FormStartPosition.CenterScreen;
 				}
+				*/
 			}
 			catch (Exception ex)
 			{
