@@ -28,30 +28,24 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-			System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-			System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
-			this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-			((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+			this.components = new System.ComponentModel.Container();
+			this.zedGraph = new ZedGraph.ZedGraphControl();
 			this.SuspendLayout();
 			// 
-			// chart1
+			// zedGraph
 			// 
-			this.chart1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-			chartArea2.Name = "ChartArea1";
-			this.chart1.ChartAreas.Add(chartArea2);
-			this.chart1.Dock = System.Windows.Forms.DockStyle.Fill;
-			legend2.Name = "Legend1";
-			this.chart1.Legends.Add(legend2);
-			this.chart1.Location = new System.Drawing.Point(0, 0);
-			this.chart1.Name = "chart1";
-			series2.ChartArea = "ChartArea1";
-			series2.Legend = "Legend1";
-			series2.Name = "Series1";
-			this.chart1.Series.Add(series2);
-			this.chart1.Size = new System.Drawing.Size(1577, 793);
-			this.chart1.TabIndex = 0;
-			this.chart1.Text = "chart1";
+			this.zedGraph.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.zedGraph.Location = new System.Drawing.Point(0, 0);
+			this.zedGraph.Name = "zedGraph";
+			this.zedGraph.ScrollGrace = 0D;
+			this.zedGraph.ScrollMaxX = 0D;
+			this.zedGraph.ScrollMaxY = 0D;
+			this.zedGraph.ScrollMaxY2 = 0D;
+			this.zedGraph.ScrollMinX = 0D;
+			this.zedGraph.ScrollMinY = 0D;
+			this.zedGraph.ScrollMinY2 = 0D;
+			this.zedGraph.Size = new System.Drawing.Size(1577, 793);
+			this.zedGraph.TabIndex = 0;
 			// 
 			// GraphForm
 			// 
@@ -59,19 +53,18 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1577, 793);
 			this.ControlBox = false;
-			this.Controls.Add(this.chart1);
+			this.Controls.Add(this.zedGraph);
 			this.DoubleBuffered = true;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.Name = "GraphForm";
 			this.Text = "GraphForm";
 			this.Load += new System.EventHandler(this.GraphForm_Load);
-			((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
 			this.ResumeLayout(false);
 
 		}
 
 		#endregion
 
-		private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+		private ZedGraph.ZedGraphControl zedGraph;
 	}
 }

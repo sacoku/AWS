@@ -33,12 +33,12 @@
 			this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
 			this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
 			this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+			this.toolStripButton5 = new System.Windows.Forms.ToolStripButton();
 			this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
 			this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-			this.toolStripButton5 = new System.Windows.Forms.ToolStripButton();
 			this.toolStrip1.SuspendLayout();
 			this.statusStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -76,7 +76,6 @@
 			this.toolStripButton3.Size = new System.Drawing.Size(38, 55);
 			this.toolStripButton3.Text = "차트";
 			this.toolStripButton3.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.toolStripButton3.Visible = false;
 			this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton5_Click);
 			// 
 			// toolStrip1
@@ -94,6 +93,18 @@
 			this.toolStrip1.Size = new System.Drawing.Size(1584, 58);
 			this.toolStrip1.TabIndex = 4;
 			this.toolStrip1.Text = "toolStrip1";
+			// 
+			// toolStripButton5
+			// 
+			this.toolStripButton5.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton5.Image")));
+			this.toolStripButton5.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this.toolStripButton5.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.toolStripButton5.Name = "toolStripButton5";
+			this.toolStripButton5.Size = new System.Drawing.Size(75, 55);
+			this.toolStripButton5.Text = "데이터 복원";
+			this.toolStripButton5.TextDirection = System.Windows.Forms.ToolStripTextDirection.Horizontal;
+			this.toolStripButton5.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this.toolStripButton5.Click += new System.EventHandler(this.toolStripButton5_Click_1);
 			// 
 			// toolStripButton4
 			// 
@@ -141,18 +152,6 @@
 			this.statusStrip1.Size = new System.Drawing.Size(1584, 22);
 			this.statusStrip1.TabIndex = 6;
 			this.statusStrip1.Text = "statusStrip1";
-			// 
-			// toolStripButton5
-			// 
-			this.toolStripButton5.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton5.Image")));
-			this.toolStripButton5.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this.toolStripButton5.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.toolStripButton5.Name = "toolStripButton5";
-			this.toolStripButton5.Size = new System.Drawing.Size(75, 55);
-			this.toolStripButton5.Text = "데이터 복원";
-			this.toolStripButton5.TextDirection = System.Windows.Forms.ToolStripTextDirection.Horizontal;
-			this.toolStripButton5.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.toolStripButton5.Click += new System.EventHandler(this.toolStripButton5_Click_1);
 			// 
 			// MainForm
 			// 
