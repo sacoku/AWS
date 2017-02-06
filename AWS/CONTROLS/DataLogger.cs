@@ -525,6 +525,12 @@ namespace AWS.CONTROL
 					{
 						if ( (j%10) == 0)
 							iLog.Debug("전송 전 연결 대기 중입니다.");
+
+						if (j > 30)
+						{
+							Connect();
+							j = 0;
+						}
 						j++;
 						Thread.Sleep(100);
 					}
