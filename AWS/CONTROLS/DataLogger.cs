@@ -572,6 +572,7 @@ namespace AWS.CONTROL
                     }
                     else if (Encoding.ASCII.GetString(command) == "AQ?")
                     {
+						data[0] = string.Format("{0}/{1}/{2} {3}:{4}", year, month, day, hour, minute);
                         data[1] = "데이터로거에 과거자료 요청";
                     }
 
@@ -918,7 +919,7 @@ namespace AWS.CONTROL
                 DataSet readDataSet = new DataSet();
 
 
-				dt = dt.AddMinutes(-5);
+				dt = dt.AddMinutes(-10);
 				iLog.Info("복구 기준 시간 : " + dt.ToString("yyyy-MM-dd HH:mm"));
 
 				StringBuilder selectQuery = new StringBuilder()
@@ -936,7 +937,8 @@ namespace AWS.CONTROL
 									.Append("WHERE DEV_IDX = ").Append(iPanelIdx.ToString())
 									.Append("  AND RECEIVETIME < #" + dt.ToString("yyyy-MM-dd HH:mm:00") + "#");
 
-                //iLog.Debug(selectQuery);
+				//iLog.Debug(selectQuery);
+				iLog.Debug("누락된 데이터 확인을 위한 00:00 ~ " + dt.ToString("HH:mm" + " 까지의 데이터를 조회합니다."));
                 con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + DBPath);
                 cmd = new OleDbCommand(selectQuery.ToString(), con);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
@@ -944,7 +946,7 @@ namespace AWS.CONTROL
                 con.Open();
                 myDataAdapter.Fill(readDataSet, "aws_min");
 
-				if (readDataSet.Tables[0].Rows.Count > 0)
+				//if (readDataSet.Tables[0].Rows.Count > 0)
                 {
 
                     DateTime startDateTime = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0);

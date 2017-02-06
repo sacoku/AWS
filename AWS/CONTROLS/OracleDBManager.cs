@@ -174,6 +174,11 @@ namespace AWS.CONTROLS
 
 				cmd.ExecuteNonQuery();
 			}
+			catch (OracleException oe)
+			{
+				if (oe.Message.Contains("ORA-00001"))
+					iLog.Error("오라클에 이미 존재하는 데이터 입니다.");
+			}
 			catch (Exception e)
 			{
 				iLog.Error(e.Message);
