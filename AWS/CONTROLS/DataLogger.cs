@@ -267,47 +267,24 @@ namespace AWS.CONTROL
 								
 								// 현재 데이터를 요구한다								
 								this.WeatherSendCommand(m_CollectDt, this.StrToByteArray("AB?"));
-								iLog.Info(AWSConfig.sValue[iPanelIdx].Name 
-											+ " : "
-											+ m_CollectDt.Year
-											+ "/"
-											+ m_CollectDt.Month
-											+ "/"
-											+ m_CollectDt.Day
-											+ " "
-											+ m_CollectDt.Hour
-											+ ":"
-											+ m_CollectDt.Minute + " 데이터 요청 ");
+								iLog.Info(string.Format("{0} : {1}/{2:00}/{3:00} {4:00}:{5:00} 현재 데이터 요청",
+											AWSConfig.sValue[iPanelIdx].Name,
+											m_CollectDt.Year,
+											m_CollectDt.Month,
+											m_CollectDt.Day,
+											m_CollectDt.Hour,
+											m_CollectDt.Minute));
 							}
 							else
 							{
 								//iLog.Debug("\"요청 데이터 시간 < 현재 시간\" 의 조건이 맞을 경우 데이터를 보냅니다.");
-								iLog.Info(AWSConfig.sValue[iPanelIdx].Name
-												+ " : 요청 데이터 시간 ["
-												+ m_CollectDt.Year
-												+ "/"
-												+ m_CollectDt.Month
-												+ "/"
-												+ m_CollectDt.Day
-												+ " "
-												+ m_CollectDt.Hour
-												+ ":"
-												+ m_CollectDt.Minute
-												+ ":"
-												+ m_CollectDt.Second
-												+ "], 현재 시간 ["
-												+ nowDt.Year
-												+ "/"
-												+ nowDt.Month
-												+ "/"
-												+ nowDt.Day
-												+ " "
-												+ nowDt.Hour
-												+ ":"
-												+ nowDt.Minute
-												+ ":"
-												+ nowDt.Second
-												+ "] ");
+								iLog.Info(string.Format("{0} : 요청 데이터 시간[{1}/{2:00}/{3:00} {4:00}:{5:00}]",
+												AWSConfig.sValue[iPanelIdx].Name,
+												m_CollectDt.Year,
+												m_CollectDt.Month,
+												m_CollectDt.Day,
+												m_CollectDt.Hour,
+												m_CollectDt.Minute));
 							}
 
 							bFlag = true;
@@ -528,7 +505,7 @@ namespace AWS.CONTROL
 
 						if (j > 30)
 						{
-							Connect();
+							throw new Exception("전송 전 접속대기 Timeout 초과");
 							j = 0;
 						}
 						j++;
@@ -540,7 +517,7 @@ namespace AWS.CONTROL
                     this.mainForm.setTXRX(1);
                     // 현재 데이터를 요구한다
                     string[] data = new string[2];
-                    data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                    data[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
                     string test = Encoding.ASCII.GetString(command);
 
@@ -550,7 +527,8 @@ namespace AWS.CONTROL
                     }
                     else if (Encoding.ASCII.GetString(command) == "AB?")
                     {
-                        data[1] = "데이터로거에 1분 자료 요청";
+						data[0] = string.Format("20{0}/{1:00}/{2:00} {3:00}:{4:00}", year, month, day, hour, minute);
+						data[1] = "데이터로거에 1분 자료 요청";
                     }
                     else if (Encoding.ASCII.GetString(command) == "AR?")
                     {
@@ -578,7 +556,7 @@ namespace AWS.CONTROL
                     }
                     else if (Encoding.ASCII.GetString(command) == "AQ?")
                     {
-						data[0] = string.Format("{0}/{1}/{2} {3}:{4}", year, month, day, hour, minute);
+						data[0] = string.Format("20{0}/{1:00}/{2:00} {3:00}:{4:00}", year, month, day, hour, minute);
                         data[1] = "데이터로거에 과거자료 요청";
                     }
 
@@ -788,14 +766,14 @@ namespace AWS.CONTROL
                     KMA2 displayKMA2 = new KMA2();
                     displayKMA2 = KMA2.SetByte(Data);
 
-					iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + receive.ToString("yyyy-MM-dd hh:mm") + " 현재 데이터 수신");
+					iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + receive.ToString("yyyy-MM-dd HH:mm") + " 현재 데이터 수신");
 
 					// 데이터를 받으면 무조건 시간을 증가 시킨다.
 					String resultData = this.saveData.getResult(iPanelIdx);
 
                     String[] receivedTime = resultData.Split(',');
 
-                    dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                    dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                     dispalyData[1] = receivedTime[1] + "현재 데이터 수신";
 
 					this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
@@ -973,18 +951,12 @@ namespace AWS.CONTROL
 
                             SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
                             isLostRequest = true;
-                            iLog.Info(    "[I: " + iPanelIdx 
-										+ "][MESSAGE TO LOGGER] LOST DATA CALL " 
-										+ startDateTime.Year 
-										+ "/" 
-										+ startDateTime.Month 
-										+ "/" 
-										+ startDateTime.Day 
-										+ " " 
-										+ startDateTime.Hour 
-										+ ":" + startDateTime.Minute 
-										+ " 데이터 요청");
-
+							iLog.Info(string.Format("[MESSAGE TO LOGGER] {0}/{1:00}/{2:00} {3:00}:{4:00} 과거 데이터 요청",
+											startDateTime.Year,
+											startDateTime.Month,
+											startDateTime.Day,
+											startDateTime.Hour,
+											startDateTime.Minute)); 
 							rows++;
 
 #if (TEST)

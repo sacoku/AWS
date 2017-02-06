@@ -121,114 +121,13 @@ namespace AWS.CONTROL
 				om.InsertAwsStampData(dev_idx, receive, kma2, min_value, max_value);
 				om.UpdateLastTimeCall(receive, AWSConfig.sValue[dev_idx].LocNum);
 
-				iLog.Info("현재자료 저장["+ todayAccessDBFile + "] : " + receive.Year + "/" + receive.Month + "/" + receive.Day + " " + receive.Hour + ":" + receive.Minute);
-
-                /*
-                double[] min_max_value = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, };
-
-                double temp = double.Parse(String.Format("{0:F1}", (kma2.Sensor_0_Datas / 10.0) - 100.0));      //온도
-                double wd = kma2.Sensor_1_Datas / 10.0;                                                                         //풍향
-                double ws = kma2.Sensor_2_Datas / 10.0;                                                                         //풍속
-                double rain = kma2.Sensor_5_Datas / 10.0;                                                                       //강우
-                double israin = kma2.Sensor_7_Datas;                                                                              //강우감지
-                double humidity = double.Parse(String.Format("{0:0}", kma2.Sensor_9_Datas / 10.0));                 //습도
-                double sunshine = double.Parse(string.Format("{0:0.0}", (kma2.Sensor1_1_Datas / 3600)));          //일조
-                double visibility = kma2.Spare1_Sensor_1_Datas;                                                                 //시정
-
-                
-                //최대값을 구한다.
-                
-
-                string selectSql = "SELECT                             "
-                                      + "         MIN(TEMP) AS MIN_TEMP            "
-                                      + "        ,MIN(WS) AS MIN_WS                "
-                                      + "        ,MIN(WD) AS MIN_WD               "
-                                      + "        ,MIN(HUMIDITY) AS MIN_HUMIDITY     "
-                                      + "        ,MAX(TEMP) AS MAX_TEMP            "
-                                      + "        ,MAX(WS) AS MAX_WS                "
-                                      + "        ,MAX(WD) AS MAX_WD               "
-                                      + "        ,MAX(HUMIDITY) AS MAX_HUMIDITY     "
-                                      + "FROM AWS_MIN                                   ";
-
-                iLog.Debug(selectSql);
-
-                con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + todayAccessDBFile);
-                cmd = new OleDbCommand(selectSql, con);
-                OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
-                DataSet readDataSet = new DataSet();
-
-                con.Open();
-                myDataAdapter.Fill(readDataSet, "aws_min");
-
-                iLog.Debug("Rows Count : " + readDataSet.Tables[0].Rows.Count);
-
-                if (readDataSet.Tables[0].Rows.Count > 0)
-                {
-                    DataRow row = readDataSet.Tables[0].Rows[0];
-
-                    for (int i = 0; i < min_max_value.Length; i++)
-                    {
-                        min_max_value[i] = (row.ItemArray.GetValue(i).ToString() == "" ? 0 : double.Parse(row.ItemArray.GetValue(i).ToString()) );
-                    }
-                }
-
-                con.Close();
-
-                iLog.Debug("TEMP / MIN_TEMP / MAX TEMP : " + temp + " / " + min_max_value[0] + " / " + min_max_value[4]);
-                iLog.Debug("WD / MIN_WD / MAX WD : " + ws + " / " + min_max_value[1] + " / " + min_max_value[5]);
-                iLog.Debug("WS / MIN_WS / MAX WS : " + ws + " / " + min_max_value[2] + " / " + min_max_value[6]);
-                iLog.Debug("HUMIDITY / MIN_HUMIDITY / MAX HUMIDITY : " + humidity + " / " + min_max_value[3] + " / " + min_max_value[7]);
-
-                insertSql =   "INSERT INTO AWS_MIN(                          "
-                            + "                      DEV_IDX                 "
-                            + "                     ,RECEIVETIME             "
-                            + "                     ,TEMP                    "
-                            + "                     ,MIN_TEMP                "
-                            + "                     ,MAX_TEMP                "
-                            + "                     ,WD                      "
-                            + "                     ,MIN_WD                      "
-                            + "                     ,MAX_WD                      "
-                            + "                     ,WS                      "
-                            + "                     ,MIN_WS                  "
-                            + "                     ,MAX_WS                  "
-                            + "                     ,RAIN                    "
-                            + "                     ,ISRAIN                  "
-                            + "                     ,HUMIDITY                "
-                            + "                     ,MIN_HUMIDITY            "
-                            + "                     ,MAX_HUMIDITY            "
-                            + "                     ,SUNSHINE                "
-                            + "                     ,VISIBILITY              "
-                            + ") VALUES(                                     "
-                            +         dev_idx 
-                            + ",'" + receive + "'"
-                            + "," + temp
-                            + "," + ((min_max_value[0]  != 0 && min_max_value[0] < temp) ? min_max_value[0] : temp)
-                            + "," + ( (min_max_value[4] != 0 && min_max_value[4] > temp) ? min_max_value[4] : temp )
-                            + "," + wd
-                            + "," + ((min_max_value[1] != 0 && min_max_value[1] < wd) ? min_max_value[1] : wd)
-                            + "," + ((min_max_value[5] != 0 && min_max_value[5] > wd) ? min_max_value[5] : wd)
-                            + "," + ws
-                            + "," + ( (min_max_value[2] != 0 && min_max_value[2] < ws) ? min_max_value[2] : ws )
-                            + "," + ((min_max_value[6] != 0 && min_max_value[6] > ws) ? min_max_value[6] : ws)
-                            + "," + rain
-                            + "," + israin
-                            + "," + humidity
-                            + "," + ( (min_max_value[3] != 0 && min_max_value[3] < humidity) ? min_max_value[3] : humidity )
-                            + "," + ((min_max_value[7] != 0 && min_max_value[7] > humidity) ? min_max_value[7] : humidity)
-                            + "," + sunshine
-                            + "," + visibility
-                            + ") ";
-
-                //Debug.WriteLine(insertSql);
-                iLog.Debug(insertSql);
-
-                con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + todayAccessDBFile);
-                cmd = new OleDbCommand(insertSql, con);
-                con.Open();
-                int n = cmd.ExecuteNonQuery();
-
-                iLog.Info("현재자료 저장 : " + receive.Year + "/" + receive.Month + "/" + receive.Day + " " + receive.Hour + ":" + receive.Minute);
-                */
+				iLog.Info(string.Format("현재자료 저장[{0}] : {1}/{2:00}/{3:00} {4:00}/{5:00}",
+							todayAccessDBFile, 
+							receive.Year,
+							receive.Month,
+							receive.Day,
+							receive.Hour,
+							receive.Minute));
             }
             catch (Exception ex)
             {
@@ -276,65 +175,14 @@ namespace AWS.CONTROL
                 om.InsertAwsStampData((int)o, receive, lastKma2, min_value, max_value);
                 //om.UpdateLastTimeCall(receive, AWSConfig.sValue[(int)o].LocNum);
 
-                iLog.Info("과거자료 저장 : " + receive.Year + "/" + receive.Month + "/" + receive.Day + " " + receive.Hour + ":" + receive.Minute);
-
-                /*
-                selectSql = "SELECT RECEIVETIME FROM AWS_MIN WHERE DEV_IDX = " + (int)o;
-                iLog.Debug(selectSql);
-
-                con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + todayAccessDBFile);
-                cmd = new OleDbCommand(selectSql, con);
-                con.Open();
-                int n = cmd.ExecuteNonQuery();
-                con.Close();
-
-                if (n <= 0)
-                {
-                    double temp = double.Parse(String.Format("{0:F1}", (lastKma2.Sensor_0_Datas / 10.0) - 100.0));
-                    double wd = lastKma2.Sensor_1_Datas / 10.0;
-                    double ws = lastKma2.Sensor_2_Datas / 10.0;
-                    double rain = lastKma2.Sensor_5_Datas / 10.0;
-                    double israin = lastKma2.Sensor_7_Datas;
-                    double humidity = double.Parse(String.Format("{0:0}", lastKma2.Sensor_9_Datas / 10.0));
-                    double sunshine = double.Parse(string.Format("{0:0.0}", (lastKma2.Sensor1_1_Datas / 3600)));
-                    double visibility = lastKma2.Spare1_Sensor_1_Datas;
-
-                    insertSql = "INSERT INTO AWS_MIN(                        "
-                            + "                      DEV_IDX                 "
-                            + "                     ,RECEIVETIME             "
-                            + "                     ,TEMP                    "
-                            + "                     ,WD                      "
-                            + "                     ,WS                      "
-                            + "                     ,RAIN                    "
-                            + "                     ,ISRAIN                  "
-                            + "                     ,HUMIDITY                "
-                            + "                     ,SUNSHINE                "
-                            + "                     ,VISIBILITY              "
-                            + ") VALUES(                                     "
-                            + (int)o
-                            + ",'" + receive + "'"
-                            + "," + temp
-                            + "," + wd
-                            + "," + ws
-                            + "," + rain
-                            + "," + israin
-                            + "," + humidity
-                            + "," + sunshine
-                            + "," + visibility
-                            + ") ";
-
-                    //Debug.WriteLine(insertSql);
-                    iLog.Debug(insertSql);
-
-                    con = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + todayAccessDBFile);
-                    cmd = new OleDbCommand(insertSql, con);
-                    con.Open();
-                   
-                    cmd.ExecuteNonQuery();
-                    iLog.Info("과거자료 저장 : " + receive.Year + "/" + receive.Month + "/" + receive.Day + " " + receive.Hour + ":" + receive.Minute);
-                }
-                */
-            }
+				iLog.Info(string.Format("과거자료 저장[{0}] : {1}/{2:00}/{3:00} {4:00}/{5:00}",
+							todayAccessDBFile,
+							receive.Year,
+							receive.Month,
+							receive.Day,
+							receive.Hour,
+							receive.Minute));
+			}
             catch (Exception ex)
             {
                 iLog.Error(ex.ToString());

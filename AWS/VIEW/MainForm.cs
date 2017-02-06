@@ -11,6 +11,7 @@ using log4net;
 using AWS.Config;
 using AWS.UTIL;
 using System.Data.OleDb;
+using System.Reflection;
 
 #pragma warning disable 0168
 
@@ -123,6 +124,20 @@ namespace AWS
 					}
 
 				}
+
+				Assembly assemObj = Assembly.GetExecutingAssembly();
+				Version v = assemObj.GetName().Version; // 현재 실행되는 어셈블리..dll의 버전 가져오기
+
+				int majorV = v.Major; // 주버전
+				int minorV = v.Minor; // 부버전
+				int buildV = v.Build; // 빌드번호
+				int revisionV = v.Revision; // 수정번호
+				this.Text = string.Format("AWS v{0}.{1}.{2}.{3} (LastBuild:{4})",
+										majorV,
+										minorV,
+										buildV,
+										revisionV,
+										new DateTime(2017,02,06).AddDays(buildV).AddSeconds(revisionV*2).ToString("yyyy-MM-dd"));
 
 				iLog.Info("Program Start");
 
