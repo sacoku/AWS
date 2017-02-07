@@ -118,16 +118,22 @@ namespace AWS.VIEW.Panel
 				   nPrevCnt = nCallCnt;
 				   while (true)
 				   {
-					   if (nCallCnt == nPrevCnt)
+					   try
 					   {
-						   iblDevName.ForeColor = Color.Red;
+						   if (nCallCnt == nPrevCnt)
+						   {
+							   iblDevName.ForeColor = Color.Red;
+						   }
+						   else
+						   {
+							   nPrevCnt = nCallCnt;
+						   }
+						   Thread.Sleep(1000 * 60 * 5);
 					   } 
-					   else
+					   catch(Exception ex)
 					   {
-						   nPrevCnt = nCallCnt;
+					   iLog.Error(ex.ToString());
 					   }
-
-					   Thread.Sleep(1000 * 60 * 5);
 				   }
 			   }
 			); DataCollWatch.Start();
@@ -287,7 +293,13 @@ namespace AWS.VIEW.Panel
 
 		private void DefaultForm_FormClosed(object sender, FormClosedEventArgs e)
 		{
-			DataCollWatch.Abort();
+			try
+			{
+				DataCollWatch.Abort();
+			} catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
 		}
 	}
 }

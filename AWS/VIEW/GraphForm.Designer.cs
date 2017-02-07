@@ -30,6 +30,10 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			this.zedGraph = new ZedGraph.ZedGraphControl();
+			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+			this.splitContainer1.Panel2.SuspendLayout();
+			this.splitContainer1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// zedGraph
@@ -44,8 +48,22 @@
 			this.zedGraph.ScrollMinX = 0D;
 			this.zedGraph.ScrollMinY = 0D;
 			this.zedGraph.ScrollMinY2 = 0D;
-			this.zedGraph.Size = new System.Drawing.Size(1577, 793);
+			this.zedGraph.Size = new System.Drawing.Size(1577, 715);
 			this.zedGraph.TabIndex = 0;
+			// 
+			// splitContainer1
+			// 
+			this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+			this.splitContainer1.Name = "splitContainer1";
+			this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+			// 
+			// splitContainer1.Panel2
+			// 
+			this.splitContainer1.Panel2.Controls.Add(this.zedGraph);
+			this.splitContainer1.Size = new System.Drawing.Size(1577, 793);
+			this.splitContainer1.SplitterDistance = 74;
+			this.splitContainer1.TabIndex = 1;
 			// 
 			// GraphForm
 			// 
@@ -53,12 +71,16 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1577, 793);
 			this.ControlBox = false;
-			this.Controls.Add(this.zedGraph);
+			this.Controls.Add(this.splitContainer1);
 			this.DoubleBuffered = true;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.Name = "GraphForm";
 			this.Text = "GraphForm";
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.GraphForm_FormClosed);
 			this.Load += new System.EventHandler(this.GraphForm_Load);
+			this.splitContainer1.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+			this.splitContainer1.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -66,5 +88,6 @@
 		#endregion
 
 		private ZedGraph.ZedGraphControl zedGraph;
+		private System.Windows.Forms.SplitContainer splitContainer1;
 	}
 }

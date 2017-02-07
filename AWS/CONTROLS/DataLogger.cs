@@ -620,7 +620,7 @@ namespace AWS.CONTROL
         {
             string result = Encoding.ASCII.GetString(Data);
             string[] data = new string[2];
-            data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+            data[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             data[1] = result + " 수신";
 
             this.mainForm.displayStatus(result, Color.Blue);
@@ -943,7 +943,9 @@ namespace AWS.CONTROL
 					while(DateTime.Compare(startDateTime, dt) < 0)
                     {
 						if (this.flag == false) break;
-                        DataRow[] result = readDataSet.Tables[0].Select("receivetime = #" + startDateTime.ToString("yyyy-MM-dd HH:mm") + "#");
+
+                        DataRow[] result = readDataSet.Tables[0].Select(
+													"receivetime = #" + startDateTime.ToString("yyyy-MM-dd HH:mm") + "#");
 
                         if (result == null || result.Length <= 0)
                         {

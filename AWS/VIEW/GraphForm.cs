@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using ZedGraph;
@@ -20,6 +21,8 @@ namespace AWS.VIEW
 		static ILog iLog = log4net.LogManager.GetLogger("Logger");
 
 		private MainForm main = null;
+		private Boolean isAlive = true;
+		private LineItem[] lineItem = null;
 		public Dictionary<string, PointPairList> ptDic = new Dictionary<string, PointPairList>();
 
 		public GraphForm()
@@ -157,6 +160,17 @@ namespace AWS.VIEW
 
 			InitGraph();
 			zedGraph.IsShowPointValues = true;
+			new Thread(() =>
+			{
+				while(isAlive)
+				{
+					readTimeData(DateTime.Now, 0);
+					zedGraph.GraphPane.AxisChange();
+					zedGraph.Refresh();
+
+					Thread.Sleep(5000);
+				}
+			}).Start();
 
 		}
 
@@ -196,13 +210,15 @@ namespace AWS.VIEW
 			zedGraph.GraphPane.Y2Axis.Scale.FontSpec = fSpec;
 			zedGraph.GraphPane.Legend.FontSpec = fSpec;
 
-			setPoint(ptDic["풍향"], "풍향", Color.Black, 1, 0);
-			setPoint(ptDic["풍속"], "풍속", Color.Red, 2, 0);
+			lineItem = new LineItem[7];
+
+			lineItem[0] = setPoint(ptDic["풍향"], "풍향", Color.Black, 1, 0);
+			lineItem[1] = setPoint(ptDic["풍속"], "풍속", Color.Red, 2, 0);
 
 			int idx = zedGraph.GraphPane.AddYAxis("기온, ℃");
 			zedGraph.GraphPane.YAxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.YAxisList[idx].Scale.FontSpec = fSpec;
-			setPoint(ptDic["기온"], "기온", Color.Green, 1, idx).IsVisible = false; ;
+			lineItem[2] = setPoint(ptDic["기온"], "기온", Color.Green, 1, idx).IsVisible = false; ;
 
 
 			idx = zedGraph.GraphPane.AddYAxis("습도, %");
@@ -213,7 +229,7 @@ namespace AWS.VIEW
 			idx = zedGraph.GraphPane.AddYAxis("강우량, mm");
 			zedGraph.GraphPane.YAxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.YAxisList[idx].Scale.FontSpec = fSpec;
-			setPoint(ptDic["강우량"], "강우량", Color.Coral, 1, idx).IsVisible = false;
+			lineItem[3] = setPoint(ptDic["강우량"], "강우량", Color.Coral, 1, idx).IsVisible = false;
 
 			idx = zedGraph.GraphPane.AddY2Axis("일조, hour");
 			zedGraph.GraphPane.Y2AxisList[idx].Title.FontSpec = fSpec;
@@ -226,8 +242,6 @@ namespace AWS.VIEW
 			zedGraph.GraphPane.Y2AxisList[idx].Scale.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].IsVisible = true;
 			setPoint(ptDic["시정"], "시정", Color.Cyan, 2, idx).IsVisible = false;
-
-			readTimeData(DateTime.Now, 0);
 
 			zedGraph.GraphPane.AxisChange();
 			zedGraph.Refresh();
@@ -322,7 +336,6 @@ namespace AWS.VIEW
 
 							if (result == null || result.Length <= 0)
 							{
-								/*
 								for (int i = 0; i < 7; i++)
 								{
 									switch (i)
@@ -350,7 +363,6 @@ namespace AWS.VIEW
 											break;
 									}
 								}
-								*/
 							}
 							else
 							{
@@ -408,6 +420,11 @@ namespace AWS.VIEW
 			}
 
 			return true;
+		}
+
+		private void GraphForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			isAlive = false;
 		}
 	}
 }
