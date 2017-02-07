@@ -84,8 +84,8 @@
             this.toolStripButton1,
             this.toolStripButton2,
             this.toolStripButton5,
-            this.toolStripButton4,
-            this.toolStripButton3});
+            this.toolStripButton3,
+            this.toolStripButton4});
 			this.toolStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
