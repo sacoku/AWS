@@ -903,7 +903,7 @@ namespace AWS.CONTROL
                 DataSet readDataSet = new DataSet();
 
 
-				dt = dt.AddMinutes(-10);
+				dt = dt.AddMinutes(-5);
 				iLog.Info("복구 기준 시간 : " + dt.ToString("yyyy-MM-dd HH:mm"));
 
 				StringBuilder selectQuery = new StringBuilder()
@@ -919,7 +919,7 @@ namespace AWS.CONTROL
 									.Append("        ,VISIBILITY						\n")
 									.Append("FROM AWS_MIN								\n")
 									.Append("WHERE DEV_IDX = ").Append(iPanelIdx.ToString())
-									.Append("  AND RECEIVETIME < #" + dt.ToString("yyyy-MM-dd HH:mm:00") + "#");
+									.Append("  AND RECEIVETIME <= #" + dt.ToString("yyyy-MM-dd HH:mm:00") + "#");
 
 				//iLog.Debug(selectQuery);
 				iLog.Debug("누락된 데이터 확인을 위한 00:00 ~ " + dt.ToString("HH:mm" + " 까지의 데이터를 조회합니다."));
@@ -939,26 +939,26 @@ namespace AWS.CONTROL
                     if(isPauseMode) Pause();
 
 					//for (int rows = 0; rows < (ts.TotalMinutes + 1);)
-					int rows = 0;
+					int rows = 0;					
 					while(DateTime.Compare(startDateTime, dt) < 0)
                     {
 						if (this.flag == false) break;
 
-                        DataRow[] result = readDataSet.Tables[0].Select(
-													"receivetime = #" + startDateTime.ToString("yyyy-MM-dd HH:mm") + "#");
+						DataRow[] result = readDataSet.Tables[0].Select("receivetime = '" + startDateTime + "'");
+						//"receivetime = #" + startDateTime.ToString("yyyy-MM-dd HH:mm") + "#");
 
-                        if (result == null || result.Length <= 0)
-                        {
+						if (result == null || result.Length <= 0)
+						{
 							Connect();
 
-                            SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
-                            isLostRequest = true;
+							SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
+							isLostRequest = true;
 							iLog.Info(string.Format("[MESSAGE TO LOGGER] {0}/{1:00}/{2:00} {3:00}:{4:00} 과거 데이터 요청",
 											startDateTime.Year,
 											startDateTime.Month,
 											startDateTime.Day,
 											startDateTime.Hour,
-											startDateTime.Minute)); 
+											startDateTime.Minute));
 							rows++;
 
 #if (TEST)
@@ -978,6 +978,8 @@ namespace AWS.CONTROL
 							}
 #endif
 						}
+						else
+							iLog.Debug(startDateTime + " 존재하는 데이터 입니다.");
 
 #if (TEST)
 						if (isLostRequest == false)

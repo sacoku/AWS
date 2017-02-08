@@ -175,7 +175,7 @@ namespace AWS.CONTROL
                 om.InsertAwsStampData((int)o, receive, lastKma2, min_value, max_value);
                 //om.UpdateLastTimeCall(receive, AWSConfig.sValue[(int)o].LocNum);
 
-				iLog.Info(string.Format("과거자료 저장[{0}] : {1}/{2:00}/{3:00} {4:00}/{5:00}",
+				iLog.Info(string.Format("과거자료 저장[{0}] : {1}/{2:00}/{3:00} {4:00}:{5:00}",
 							todayAccessDBFile,
 							receive.Year,
 							receive.Month,

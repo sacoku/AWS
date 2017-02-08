@@ -8,6 +8,7 @@ using System.Data.OleDb;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -24,6 +25,34 @@ namespace AWS.VIEW
 		private Boolean isAlive = true;
 		private LineItem[] lineItem = null;
 		public Dictionary<string, PointPairList> ptDic = new Dictionary<string, PointPairList>();
+		public int nItemCode = 0;
+		public Boolean bRealTime = true;
+
+		public class ComboBoxItem
+		{
+			#region Fields
+			private int code;
+			private string name;
+			#endregion
+
+			#region Properties
+			public int Code
+			{
+				get { return code; }
+				set { code = value; }
+			}
+			public string Name
+			{
+				get { return name; }
+				set { name = value; }
+			}
+			#endregion
+
+			public override string ToString()
+			{
+				return this.name;
+			}
+		}
 
 		public GraphForm()
 		{
@@ -158,15 +187,40 @@ namespace AWS.VIEW
 			zedGraph.Refresh();
 			*/
 
+			for (int i = 0; i < AWS.Config.AWSConfig.sCount; i++)
+			{
+				ComboBoxItem item = new ComboBoxItem();
+				item.Code = i;
+				item.Name = AWS.Config.AWSConfig.sValue[i].Name;
+				comboBox1.Items.Add(item);
+			}
+			comboBox1.SelectedIndex = 0;
+
+			
+			ComboBoxItem itm = new ComboBoxItem();
+			itm.Code = 0;
+			itm.Name = "실시간 그래프";
+			comboBox2.Items.Add(itm);
+
+			ComboBoxItem itm2 = new ComboBoxItem();
+			itm2.Code = 1;
+			itm2.Name = "기간별 조회 그래프";
+			comboBox2.Items.Add(itm2);
+
+			comboBox2.SelectedIndex = 0;
+
 			InitGraph();
-			zedGraph.IsShowPointValues = true;
+			//zedGraph.IsShowPointValues = true;
 			new Thread(() =>
 			{
 				while(isAlive)
 				{
-					readTimeData(DateTime.Now, 0);
-					zedGraph.GraphPane.AxisChange();
-					zedGraph.Refresh();
+					if (bRealTime)
+					{
+						readTimeData(DateTime.Now, nItemCode);
+						zedGraph.GraphPane.AxisChange();
+						zedGraph.Refresh();
+					}
 
 					Thread.Sleep(5000);
 				}
@@ -182,7 +236,7 @@ namespace AWS.VIEW
 			fSpec.IsAntiAlias = true;
 			fSpec.Border.IsVisible = false;
 			
-			zedGraph.GraphPane.Title.Text = "기상 그래프";
+			zedGraph.GraphPane.Title.Text = AWS.Config.AWSConfig.sValue[nItemCode].Name + " 기상 그래프";
 			zedGraph.GraphPane.XAxis.Title.Text = "시간, ";
 			zedGraph.GraphPane.YAxis.Title.Text = "풍향, m/s";
 			zedGraph.GraphPane.Y2Axis.Title.Text = "풍속, m/s2";
@@ -200,6 +254,8 @@ namespace AWS.VIEW
 			zedGraph.GraphPane.XAxis.Scale.Format = "HH:mm:ss\nyy/MM/dd";
 			zedGraph.GraphPane.XAxis.Scale.MinorUnit = DateUnit.Second;
 			zedGraph.GraphPane.XAxis.Scale.MajorUnit = DateUnit.Minute;
+			zedGraph.GraphPane.XAxis.Scale.Min = new XDate(DateTime.Now.AddHours(-1));
+			zedGraph.GraphPane.XAxis.Scale.Max = new XDate(DateTime.Now.AddHours(+1));
 
 			zedGraph.GraphPane.Title.FontSpec = fSpec;
 			zedGraph.GraphPane.XAxis.Title.FontSpec = fSpec;
@@ -218,30 +274,30 @@ namespace AWS.VIEW
 			int idx = zedGraph.GraphPane.AddYAxis("기온, ℃");
 			zedGraph.GraphPane.YAxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.YAxisList[idx].Scale.FontSpec = fSpec;
-			lineItem[2] = setPoint(ptDic["기온"], "기온", Color.Green, 1, idx).IsVisible = false; ;
+			lineItem[2] = setPoint(ptDic["기온"], "기온", Color.Green, 1, idx); // IsVisible = false; ;
 
 
 			idx = zedGraph.GraphPane.AddYAxis("습도, %");
 			zedGraph.GraphPane.YAxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.YAxisList[idx].Scale.FontSpec = fSpec;
-			setPoint(ptDic["습도"], "습도", Color.Blue, 1, idx).IsVisible = false;
+			lineItem[3] = setPoint(ptDic["습도"], "습도", Color.Blue, 1, idx); //.IsVisible = false;
 
 			idx = zedGraph.GraphPane.AddYAxis("강우량, mm");
 			zedGraph.GraphPane.YAxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.YAxisList[idx].Scale.FontSpec = fSpec;
-			lineItem[3] = setPoint(ptDic["강우량"], "강우량", Color.Coral, 1, idx).IsVisible = false;
+			lineItem[4] = setPoint(ptDic["강우량"], "강우량", Color.Coral, 1, idx); //.IsVisible = false;
 
 			idx = zedGraph.GraphPane.AddY2Axis("일조, hour");
 			zedGraph.GraphPane.Y2AxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].Scale.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].IsVisible = true;
-			setPoint(ptDic["일조"], "일조", Color.Crimson, 2, idx).IsVisible = false;
+			lineItem[5] = setPoint(ptDic["일조"], "일조", Color.DarkTurquoise, 2, idx); //.IsVisible = false;
 
 			idx = zedGraph.GraphPane.AddY2Axis("시정, m");
 			zedGraph.GraphPane.Y2AxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].Scale.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].IsVisible = true;
-			setPoint(ptDic["시정"], "시정", Color.Cyan, 2, idx).IsVisible = false;
+			lineItem[6] = setPoint(ptDic["시정"], "시정", Color.Cyan, 2, idx); //.IsVisible = false;
 
 			zedGraph.GraphPane.AxisChange();
 			zedGraph.Refresh();
@@ -249,7 +305,7 @@ namespace AWS.VIEW
 
 		public LineItem setPoint(PointPairList point, String Label, Color color, int YIndex, int YAxisIndex)
 		{
-			LineItem LineItem1 = zedGraph.GraphPane.AddCurve(Label, point, color, SymbolType.Triangle);
+			LineItem LineItem1 = zedGraph.GraphPane.AddCurve(Label, point, color, SymbolType.None);
 
 			LineItem1.Line.Width = 1;
 			LineItem1.Line.IsSmooth = true;
@@ -270,6 +326,7 @@ namespace AWS.VIEW
 			return LineItem1;
 		}
 
+		[MethodImpl(MethodImplOptions.Synchronized)]
 		private Boolean readTimeData(DateTime dateTime, int dev_idx)
 		{
 			OleDbConnection con = null;
@@ -293,6 +350,8 @@ namespace AWS.VIEW
 
 			try
 			{
+				zedGraph.GraphPane.Title.Text = AWS.Config.AWSConfig.sValue[nItemCode].Name + " 기상 그래프";
+
 				StringBuilder selectQuery = new StringBuilder()
 								.Append("SELECT								\n")
 								.Append("   RECEIVETIME						\n")
@@ -330,6 +389,14 @@ namespace AWS.VIEW
 					
 					int rows = 0;
 					{
+						zedGraph.GraphPane.XAxis.Scale.Min = new XDate(DateTime.Now.AddHours(-1));
+						zedGraph.GraphPane.XAxis.Scale.Max = new XDate(DateTime.Now.AddHours(+1));
+
+						foreach (LineItem i in lineItem)
+						{
+							i.Clear();
+						}
+
 						for (; rows < 1443; rows++)
 						{
 							DataRow[] result = readDataSet.Tables[0].Select("receivetime = '" + readDateTime + "'");
@@ -405,7 +472,6 @@ namespace AWS.VIEW
 				else
 				{
 					con.Close();
-					MessageBox.Show("데이터가 없습니다.");
 					return false;
 				}
 			}
@@ -425,6 +491,36 @@ namespace AWS.VIEW
 		private void GraphForm_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			isAlive = false;
+		}
+
+		private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			ComboBoxItem item = comboBox1.SelectedItem as ComboBoxItem;
+			this.nItemCode = item.Code;
+			//readTimeData(DateTime.Now, nItemCode);
+		}
+
+		private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			ComboBoxItem item = comboBox2.SelectedItem as ComboBoxItem;
+
+			if(item.Code == 1)
+			{
+				label1.Visible = true;
+				label2.Visible = true;
+				dateTimePicker1.Visible = true;
+				dateTimePicker2.Visible = true;
+				button1.Visible = true;
+				bRealTime = false;
+			} else
+			{
+				label1.Visible = false;
+				label2.Visible = false;
+				dateTimePicker1.Visible = false;
+				dateTimePicker2.Visible = false;
+				button1.Visible = false;
+				bRealTime = true;
+			}
 		}
 	}
 }
