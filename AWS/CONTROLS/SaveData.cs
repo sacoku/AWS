@@ -153,7 +153,7 @@ namespace AWS.CONTROL
             {
                 receive = new DateTime(2000 + ((int)lastKma2.Year), (int)lastKma2.Month, (int)lastKma2.Day, (int)lastKma2.Hour, (int)lastKma2.Minute, 0);
 
-                folderName += String.Format("{0:D4}", DateTime.Now.Year) + @"\" + String.Format("{0:D2}", DateTime.Now.Month) + @"\";
+                folderName += String.Format("{0:D4}", receive.Year) + @"\" + String.Format("{0:D2}", receive.Month) + @"\";
 
                 String todayAccessDBFile = folderName + "aws_" + String.Format("{0:D4}", lastKma2.Year + 2000) + String.Format("{0:D2}", lastKma2.Month)
                     + String.Format("{0:D2}", lastKma2.Day) + ".mdb";

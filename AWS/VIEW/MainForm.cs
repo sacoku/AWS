@@ -257,7 +257,8 @@ namespace AWS
 			{
 				Form activeChild = this.ActiveMdiChild;
 
-				MessageBox.Show("준비중입니다.");
+				HistoryPopup h = new HistoryPopup(this);
+				h.Show();
 
 				/*
 				if (activeChild.Name != "HistoryForm")
@@ -301,8 +302,8 @@ namespace AWS
         {
             try
             {
-                this.toolStripStatusLabel.Text = status;
-                this.toolStripStatusLabel.ForeColor = foreColor;
+                //this.toolStripStatusLabel.Text = status;
+                //this.toolStripStatusLabel.ForeColor = foreColor;
             }
             catch (Exception ex)
             {

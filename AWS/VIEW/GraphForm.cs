@@ -285,19 +285,19 @@ namespace AWS.VIEW
 			idx = zedGraph.GraphPane.AddYAxis("강우량, mm");
 			zedGraph.GraphPane.YAxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.YAxisList[idx].Scale.FontSpec = fSpec;
-			lineItem[4] = setPoint(ptDic["강우량"], "강우량", Color.Coral, 1, idx); //.IsVisible = false;
+			lineItem[4] = setPoint(ptDic["강우량"], "강우량", Color.Crimson, 1, idx); //.IsVisible = false;
 
 			idx = zedGraph.GraphPane.AddY2Axis("일조, hour");
 			zedGraph.GraphPane.Y2AxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].Scale.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].IsVisible = true;
-			lineItem[5] = setPoint(ptDic["일조"], "일조", Color.DarkTurquoise, 2, idx); //.IsVisible = false;
+			lineItem[5] = setPoint(ptDic["일조"], "일조", Color.Indigo, 2, idx); //.IsVisible = false;
 
 			idx = zedGraph.GraphPane.AddY2Axis("시정, m");
 			zedGraph.GraphPane.Y2AxisList[idx].Title.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].Scale.FontSpec = fSpec;
 			zedGraph.GraphPane.Y2AxisList[idx].IsVisible = true;
-			lineItem[6] = setPoint(ptDic["시정"], "시정", Color.Cyan, 2, idx); //.IsVisible = false;
+			lineItem[6] = setPoint(ptDic["시정"], "시정", Color.OrangeRed, 2, idx); //.IsVisible = false;
 
 			zedGraph.GraphPane.AxisChange();
 			zedGraph.Refresh();
@@ -389,8 +389,8 @@ namespace AWS.VIEW
 					
 					int rows = 0;
 					{
-						zedGraph.GraphPane.XAxis.Scale.Min = new XDate(DateTime.Now.AddHours(-1));
-						zedGraph.GraphPane.XAxis.Scale.Max = new XDate(DateTime.Now.AddHours(+1));
+						zedGraph.GraphPane.XAxis.Scale.Min = new XDate(DateTime.Now.AddMinutes(-30));
+						zedGraph.GraphPane.XAxis.Scale.Max = new XDate(DateTime.Now.AddMinutes(+5));
 
 						foreach (LineItem i in lineItem)
 						{

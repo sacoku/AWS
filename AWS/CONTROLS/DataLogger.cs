@@ -20,8 +20,7 @@ using System.Net;
 using System.Data.OleDb;
 using System.Data;
 using AWS.Config;
-
-
+using AWS.UTIL;
 
 namespace AWS.CONTROL
 {
@@ -57,9 +56,10 @@ namespace AWS.CONTROL
         int iRetryConnCnt = 0;
         Boolean isPause = false;
         Boolean isLostRequest = false;
-		Boolean bIsReadyToRun = false;
+		public Boolean bIsReadyToRun = false;
+		public Boolean bIsReadyToRun2 = false;
 
-        private object lockObject = null;
+		private object lockObject = null;
 		private object connLock = null;
 
         public DataLogger(MainForm main, int idx, Boolean isRecovery, object lockObj)
@@ -787,7 +787,7 @@ namespace AWS.CONTROL
                     WeatherProcThread.IsBackground = true;
                     WeatherProcThread.Start();
 					*/
-					bIsReadyToRun = true;
+//					bIsReadyToRun = true;
 				} 
                 else
                 {
@@ -868,12 +868,13 @@ namespace AWS.CONTROL
 
 			Thread.Sleep(10000); //Delay를 주고 시작한다.
 
+			bIsReadyToRun = true;
 			while (flag)
 			{
-				bIsReadyToRun = true;
 				if (bIsReadyToRun)
 				{
-					DateTime currentTime = DateTime.Now;
+					bIsReadyToRun2 = true;
+					DateTime currentTime = DateTime.Now.AddMinutes(-5);
 					RecoverLostData(currentTime, false);
 				}
 
@@ -896,14 +897,11 @@ namespace AWS.CONTROL
                 string DBPath = AWSConfig.HOME_PATH + "\\AWSDATA\\" + AWSConfig.sValue[(int)iPanelIdx].Name + "\\" + year + "\\" + month + "\\aws_" + fileName + ".mdb";
                 if (!File.Exists(DBPath))
                 {
-                    MessageBox.Show(DBPath + " Date file isn't exist!");
-                    return;
+					CommonUtil.checkAccessFile(dt);
                 }
 
                 DataSet readDataSet = new DataSet();
 
-
-				dt = dt.AddMinutes(-5);
 				iLog.Info("복구 기준 시간 : " + dt.ToString("yyyy-MM-dd HH:mm"));
 
 				StringBuilder selectQuery = new StringBuilder()
@@ -919,7 +917,7 @@ namespace AWS.CONTROL
 									.Append("        ,VISIBILITY						\n")
 									.Append("FROM AWS_MIN								\n")
 									.Append("WHERE DEV_IDX = ").Append(iPanelIdx.ToString())
-									.Append("  AND RECEIVETIME <= #" + dt.ToString("yyyy-MM-dd HH:mm:00") + "#");
+									.Append("  AND RECEIVETIME <= #" + dt.ToString("yyyy-MM-dd HH:mm") + "#");
 
 				//iLog.Debug(selectQuery);
 				iLog.Debug("누락된 데이터 확인을 위한 00:00 ~ " + dt.ToString("HH:mm" + " 까지의 데이터를 조회합니다."));
@@ -942,7 +940,11 @@ namespace AWS.CONTROL
 					int rows = 0;					
 					while(DateTime.Compare(startDateTime, dt) < 0)
                     {
-						if (this.flag == false) break;
+						if (this.flag == false || bIsReadyToRun2 == false)
+						{
+							iLog.Info("실시간 복원 프로세스가 강제 종료 됩니다.");
+							break;
+						}
 
 						DataRow[] result = readDataSet.Tables[0].Select("receivetime = '" + startDateTime + "'");
 						//"receivetime = #" + startDateTime.ToString("yyyy-MM-dd HH:mm") + "#");
@@ -978,8 +980,10 @@ namespace AWS.CONTROL
 							}
 #endif
 						}
+/*
 						else
 							iLog.Debug(startDateTime + " 존재하는 데이터 입니다.");
+*/
 
 #if (TEST)
 						if (isLostRequest == false)
