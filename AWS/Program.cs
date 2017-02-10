@@ -12,6 +12,8 @@ namespace AWS
     {
         static System.Threading.Mutex singleton = new System.Threading.Mutex(true, "AWS");
 
+		public static MainForm mf = null;
+
         /// <summary>
         /// 해당 응용 프로그램의 주 진입점입니다.
         /// </summary>
@@ -30,7 +32,8 @@ namespace AWS
           
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+			mf = new MainForm();
+            Application.Run(mf);
         }
     }
 }

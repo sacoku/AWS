@@ -1,4 +1,10 @@
-﻿//#define TEST
+﻿//-----------------------------------------------------------------------
+// <copyright file="DataLogger.cs" company="[Company Name]">
+//     Copyright (c) [Company Name] Corporation.  All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+//#define TEST
 
 using System;
 using System.Collections.Generic;
@@ -24,6 +30,8 @@ using AWS.UTIL;
 
 namespace AWS.CONTROL
 {
+	public delegate void OnComplete(int i, String msg);
+
     public class DataLogger
     {
 		ILog iLog = null;  
@@ -55,12 +63,12 @@ namespace AWS.CONTROL
         int iPanelIdx = -1;
         int iRetryConnCnt = 0;
         Boolean isPause = false;
-        Boolean isLostRequest = false;
 		public Boolean bIsReadyToRun = false;
 		public Boolean bIsReadyToRun2 = false;
 
 		private object lockObject = null;
 		private object connLock = null;
+		public OnComplete KMACatchComplete = null;
 
         public DataLogger(MainForm main, int idx, Boolean isRecovery, object lockObj)
         {
@@ -506,7 +514,6 @@ namespace AWS.CONTROL
 						if (j > 30)
 						{
 							throw new Exception("전송 전 접속대기 Timeout 초과");
-							j = 0;
 						}
 						j++;
 						Thread.Sleep(100);
@@ -791,7 +798,6 @@ namespace AWS.CONTROL
 				} 
                 else
                 {
-					isLostRequest = false;
 					this.saveData.kma2 = new KMA2(); // 기상데이터 프로토콜 처리 클래스 생성
                     saveData.lastKma2 = KMA2.SetByte(Data); // 기상데이터 프로토콜에 데이터를 넣는다.  
                     saveData.ByteChangAllLastData();
@@ -819,10 +825,13 @@ namespace AWS.CONTROL
 								  + ":" 
 								  + string.Format("{0:00}", saveData.lastKma2.Minute);
 
-                    dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+					dispalyData[0] = lastReceive.ToString("yyyy-MM-dd hh:mm"); // DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                     dispalyData[1] = result + "과거 데이터 수신";
 
-                    Thread WeatherProcThread = new Thread(new ParameterizedThreadStart(saveData.saveLastData));
+					if (KMACatchComplete != null) KMACatchComplete(iPanelIdx, lastReceive.ToString("yyyy-MM-dd hh:mm"));
+					this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
+
+					Thread WeatherProcThread = new Thread(new ParameterizedThreadStart(saveData.saveLastData));
                     WeatherProcThread.Name = "WeatherThread";
                     WeatherProcThread.IsBackground = true;
                     WeatherProcThread.Start(iPanelIdx);
@@ -938,7 +947,7 @@ namespace AWS.CONTROL
 
 					//for (int rows = 0; rows < (ts.TotalMinutes + 1);)
 					int rows = 0;					
-					while(DateTime.Compare(startDateTime, dt) < 0)
+					while(DateTime.Compare(startDateTime, dt) <= 0)
                     {
 						if (this.flag == false || bIsReadyToRun2 == false)
 						{
@@ -954,7 +963,6 @@ namespace AWS.CONTROL
 							Connect();
 
 							SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
-							isLostRequest = true;
 							iLog.Info(string.Format("[MESSAGE TO LOGGER] {0}/{1:00}/{2:00} {3:00}:{4:00} 과거 데이터 요청",
 											startDateTime.Year,
 											startDateTime.Month,
@@ -962,48 +970,16 @@ namespace AWS.CONTROL
 											startDateTime.Hour,
 											startDateTime.Minute));
 							rows++;
-
-#if (TEST)
-
-							Thread.Sleep(AWSConfig.RCSOD * 1000);
-							while (isLostRequest == true)
-                            {
-                                if (nFailCnt >= 5)
-                                {
-                                    nFailCnt = 0;
-									break;
-                                }
-                                else
-                                    nFailCnt++;
-
-								Thread.Sleep(1000);
-							}
-#endif
 						}
-/*
-						else
-							iLog.Debug(startDateTime + " 존재하는 데이터 입니다.");
-*/
 
-#if (TEST)
-						if (isLostRequest == false)
-						{	
-							startDateTime = startDateTime.AddMinutes(+1);
-							lostCnt++;
+						//else
+						//	iLog.Debug(startDateTime + " 존재하는 데이터 입니다.");
 
-							iLog.Debug("응답을 받았으며 다음 데이터를 요청합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
-							rows++;
-						} else
-						{
-							iLog.Debug("응답을 받지 못해서 재요청 합니다. " + startDateTime.ToString("yyyy-MM-dd hh:mm:ss"));
-						}
-#else
 							startDateTime = startDateTime.AddMinutes(+1); 
 							if (result == null || result.Length <= 0)
 								Thread.Sleep(AWSConfig.RCSOD * 1000);
 							else
 								Thread.Sleep(10);
-#endif
 					}
 
 					if (isPauseMode) Resume();

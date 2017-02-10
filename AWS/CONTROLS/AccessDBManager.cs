@@ -1,4 +1,9 @@
-﻿using AWS.MODEL;
+﻿//-----------------------------------------------------------------------
+// <copyright file="AccessDBManager.cs" company="[Company Name]">
+//     Copyright (c) [Company Name] Corporation.  All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using AWS.MODEL;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -466,10 +471,10 @@ namespace AWS.CONTROLS
 										  "        ,TEMP = {1:F1}					\n" +
 										  "        ,WD = {2:0.0}					\n" +
 										  "        ,WS = {3:0.0}					\n" +
-										  "        ,RAIN = {4}						\n" +
+										  "        ,RAIN = {4:0.0}					\n" +
 									  	  "        ,HUMIDITY = {5:0}				\n" +
 										  "        ,SUNSHINE = {6:0.0}				\n" +
-										  "        ,VISIBILITY = {7}				\n" +
+										  "        ,VISIBILITY = {7:0}				\n" +
 										  "WHERE AWS_DATE = #{8}#					  ",
 							values[0],
 							values[1],

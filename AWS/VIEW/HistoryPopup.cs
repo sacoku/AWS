@@ -1,4 +1,10 @@
-﻿using AWS.MODEL;
+﻿//-----------------------------------------------------------------------
+// <copyright file="HistoryPopup.cs" company="[Company Name]">
+//     Copyright (c) [Company Name] Corporation.  All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using AWS.Config;
+using AWS.MODEL;
 using AWS.UTIL;
 using log4net;
 using System;
@@ -7,18 +13,21 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
 namespace AWS.VIEW
 {
+	public delegate void OnComplete(String msg);
+
 	public partial class HistoryPopup : Form
 	{
 		private MainForm frm = null;
 		private int nLoggerIdx = 0;
-		private Boolean isPause = false;
 		private Thread th = null;
+		public OnComplete CompleteHandler = null;
 		ILog iLog = log4net.LogManager.GetLogger("Logger");
 
 		public class ComboBoxItem
@@ -49,30 +58,64 @@ namespace AWS.VIEW
 
 		public HistoryPopup(MainForm frm)
 		{
-			this.frm = frm;
-
-			InitializeComponent();
-
-			for (int i = 0; i < AWS.Config.AWSConfig.sCount; i++)
+			try
 			{
-				ComboBoxItem item = new ComboBoxItem();
-				item.Code = i;
-				item.Name = AWS.Config.AWSConfig.sValue[i].Name;
-				comboBox1.Items.Add(item);
+				this.frm = frm;
+
+				InitializeComponent();
+
+				for (int i = 0; i < AWS.Config.AWSConfig.sCount; i++)
+				{
+					ComboBoxItem item = new ComboBoxItem();
+					item.Code = i;
+					item.Name = AWS.Config.AWSConfig.sValue[i].Name;
+					comboBox1.Items.Add(item);
+				}
+
+				ComboBoxItem item2 = new ComboBoxItem();
+				item2.Code = 3;
+				item2.Name = "전체";
+				comboBox1.Items.Add(item2);
+
+				comboBox1.SelectedIndex = 0;
+
+				for (int i = 0; i < 3; i++)
+				{
+					Label lb = (Label)((FieldInfo)this.GetType().GetMember("label" + (i + 1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(this);
+					ListView v = (ListView)((FieldInfo)this.GetType().GetMember("listView" + (i + 1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(this);
+
+					lb.Text = AWSConfig.sValue[i].Name;
+
+					ColumnHeader cHeader = new ColumnHeader();
+					cHeader.Width = 100;
+					cHeader.Text = "수신시각";
+					v.Columns.Add(cHeader);
+					ColumnHeader cHeader2 = new ColumnHeader();
+					cHeader2.Width = 120;
+					cHeader2.Text = "복원 데이터";
+					v.Columns.Add(cHeader2);
+
+					v.GridLines = true;
+
+				}
+			} 
+			catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
 			}
 
-			ComboBoxItem item2 = new ComboBoxItem();
-			item2.Code = 3;
-			item2.Name = "전체";
-			comboBox1.Items.Add(item2);
+			//listView1.GridLines = true;
+			//listView2.GridLines = true;
+			//listView3.GridLines = true;
+		}
 
-			comboBox1.SelectedIndex = 0;
+		public void Stop()
+		{
+			button2_Click(this, new EventArgs());
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			isPause = false;
-
 			if( monthCalendar1.SelectionStart.Year == DateTime.Now.Year &&
 				monthCalendar1.SelectionStart.Month == DateTime.Now.Month &&
 				monthCalendar1.SelectionStart.Day == DateTime.Now.Day)
@@ -135,7 +178,6 @@ namespace AWS.VIEW
 		{
 			try
 			{
-				isPause = true;
 				frm.rLogger[nLoggerIdx].bIsReadyToRun2 = false;
 				Thread.Sleep(1000);
 				if (th != null)
@@ -152,7 +194,7 @@ namespace AWS.VIEW
 			{
 				frm.rLogger[nLoggerIdx].bIsReadyToRun = true;
 				frm.rLogger[nLoggerIdx].bIsReadyToRun2 = true;
-				//iLog.Error(ex.ToString());
+				iLog.Error(ex.ToString());
 			}
 		}
 
@@ -162,9 +204,33 @@ namespace AWS.VIEW
 			nLoggerIdx = item.Code;
 		}
 
-		private void HistoryPopup_FormClosed(object sender, FormClosedEventArgs e)
+		public void OnComplete(int i, String msg)
 		{
-			button2_Click(sender, e);
+			ListView v = (ListView)((FieldInfo)Program.mf.historyForm.GetType()
+								.GetMember("listView" + (i+1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(Program.mf.historyForm);
+			ListViewItem lItem = new ListViewItem(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+			lItem.SubItems.Add(msg);
+			v.Items.Insert(0, lItem);
+		}
+
+		private void button3_Click(object sender, EventArgs e)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				ListView v = (ListView)((FieldInfo)this.GetType().GetMember("listView" + (i + 1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(this);
+
+				v.Clear();
+
+				ColumnHeader cHeader = new ColumnHeader();
+				cHeader.Width = 100;
+				cHeader.Text = "수신시각";
+				v.Columns.Add(cHeader);
+				ColumnHeader cHeader2 = new ColumnHeader();
+				cHeader2.Width = 120;
+				cHeader2.Text = "복원 데이터";
+				v.Columns.Add(cHeader2);
+
+			}
 		}
 	}
 }

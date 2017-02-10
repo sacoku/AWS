@@ -1,4 +1,9 @@
-﻿using AWS.Config;
+﻿//-----------------------------------------------------------------------
+// <copyright file="OracleDBManager.cs" company="[Company Name]">
+//     Copyright (c) [Company Name] Corporation.  All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using AWS.Config;
 using AWS.MODEL;
 using log4net;
 using System;

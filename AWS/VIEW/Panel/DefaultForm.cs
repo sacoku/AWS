@@ -1,4 +1,9 @@
-﻿using System;
+﻿//-----------------------------------------------------------------------
+// <copyright file="DefaultForm.cs" company="[Company Name]">
+//     Copyright (c) [Company Name] Corporation.  All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -132,7 +137,7 @@ namespace AWS.VIEW.Panel
 					   } 
 					   catch(Exception ex)
 					   {
-					   iLog.Error(ex.ToString());
+						iLog.Error(ex.ToString());
 					   }
 				   }
 			   }
@@ -142,32 +147,39 @@ namespace AWS.VIEW.Panel
 
         private void GenerateTable(int columnCount, int rowCount)
         {
-            //Clear out the existing controls, we are generating a new table layout
-            tableLayoutPanel2.Controls.Clear();
+			try
+			{
+				//Clear out the existing controls, we are generating a new table layout
+				tableLayoutPanel2.Controls.Clear();
 
-            //Clear out the existing row and column styles
-            tableLayoutPanel2.ColumnStyles.Clear();
-            tableLayoutPanel2.RowStyles.Clear();
+				//Clear out the existing row and column styles
+				tableLayoutPanel2.ColumnStyles.Clear();
+				tableLayoutPanel2.RowStyles.Clear();
 
-            //Now we will generate the table, setting up the row and column counts first
-            tableLayoutPanel2.ColumnCount = columnCount;
-            tableLayoutPanel2.RowCount = rowCount;
+				//Now we will generate the table, setting up the row and column counts first
+				tableLayoutPanel2.ColumnCount = columnCount;
+				tableLayoutPanel2.RowCount = rowCount;
 
-            for (int x = 0; x < columnCount; x++)
-            {
-                //First add a column
-                tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+				for (int x = 0; x < columnCount; x++)
+				{
+					//First add a column
+					tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 
-                float RowPercent = 100F / rowCount;
-                for (int y = 0; y < rowCount; y++)
-                {
-                    //Next, add a row.  Only do this when once, when creating the first column
-                    if (x == 0)
-                    {
-                        tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, RowPercent));
-                    }
-                }
-            }
+					float RowPercent = 100F / rowCount;
+					for (int y = 0; y < rowCount; y++)
+					{
+						//Next, add a row.  Only do this when once, when creating the first column
+						if (x == 0)
+						{
+							tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, RowPercent));
+						}
+					}
+				}
+			}
+			catch(Exception e)
+			{
+				iLog.Error(e.ToString());
+			}
         }
 
         private String getDirection(String direction)

@@ -1,4 +1,9 @@
-﻿using AWS.MODEL;
+﻿//-----------------------------------------------------------------------
+// <copyright file="DisplayForm.cs" company="[Company Name]">
+//     Copyright (c) [Company Name] Corporation.  All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using AWS.MODEL;
 using AWS.UTIL;
 using log4net;
 using System;

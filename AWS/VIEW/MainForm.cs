@@ -1,4 +1,9 @@
-﻿using System;
+﻿//-----------------------------------------------------------------------
+// <copyright file="MainForm.cs" company="[Company Name]">
+//     Copyright (c) [Company Name] Corporation.  All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using AWS.CONTROL;
@@ -26,6 +31,8 @@ namespace AWS
         public DataLogger[] logger = null;
 		public DataLogger[] rLogger = null;
 
+		public HistoryPopup historyForm = null;
+
 		//데이타를 수집하기 위한 스레드 객체
 		public Thread makeThread = null;
         private bool isFlag = true;
@@ -40,46 +47,15 @@ namespace AWS
         {
             InitializeComponent();
 
-			//++ add by sacoku
 			try
 			{
-                //REGISTRY에서 HOME_PATH를 불러옴..
-                AWSConfig.HOME_PATH = CommonUtil.ReadReg("HOME_PATH");
-                iLog.Info(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
-                AWSConfig.Load(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
-			}
-			catch (Exception e)
-            {
-				iLog.Error(e.Message);
-				iLog.Error(e.StackTrace);
-                FolderBrowserDialog dialog = new FolderBrowserDialog();
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    AWSConfig.HOME_PATH = dialog.SelectedPath;
-                    iLog.Debug("HOME_PATH" + AWSConfig.HOME_PATH);
-                    //REGISTRY에 저장...
-                    CommonUtil.WriteReg("HOME_PATH", AWSConfig.HOME_PATH);
-                    try
-                    {
-                        AWSConfig.Load(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
-                    } catch(Exception e1)
-                    {
-                        Environment.Exit(-1);
-                    }
-                    
-                }
-                else
-                    Environment.Exit(-1);
-            }
-			//add by sacoku ++
-
-			try
-			{
+				this.init();
 
 				this.displayForm = new DisplayForm(this);
 				this.reportForm = new ReportForm(this);
 				this.displayForm2 = new DisplayForm2(this);
 				this.graphForm = new GraphForm(this);
+				this.historyForm = new HistoryPopup(this);
 
 				this.displayForm.ControlBox = false;
 				this.displayForm2.ControlBox = false;
@@ -90,13 +66,72 @@ namespace AWS
 				this.displayForm2.MdiParent = this;
 				this.graphForm.MdiParent = this;
 
-				//this.displayForm.Show();
 				this.displayForm2.Show();
 
 				this.displayForm2.Dock = DockStyle.Fill;
 				this.reportForm.Dock = DockStyle.Fill;
 				this.graphForm.Dock = DockStyle.Fill;
 
+				startLogger();
+
+				iLog.Info("Program Start");
+
+			} catch(Exception e)
+			{
+				iLog.Error(e.ToString());
+			}
+
+		}
+
+		/// <summary>
+		/// 시스템 초기화 함수.
+		/// </summary>
+		/// <remarks>
+		/// 2017.01.02 sacoku 최초 작성
+		/// </remarks>
+
+		public void init()
+        {
+			try
+			{
+				//REGISTRY에서 HOME_PATH를 Load
+				AWSConfig.HOME_PATH = CommonUtil.ReadReg("HOME_PATH");
+				iLog.Info(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
+				AWSConfig.Load(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
+			}
+			catch (Exception e)
+			{
+				iLog.Error(e.Message);
+				iLog.Error(e.StackTrace);
+
+				//최초 실행 또는 다른 이유로 HOME_PATH가 존재 하지 않을 경우 HOME_PATH 설정
+				FolderBrowserDialog dialog = new FolderBrowserDialog();
+				if (dialog.ShowDialog() == DialogResult.OK)
+				{
+					AWSConfig.HOME_PATH = dialog.SelectedPath;
+					iLog.Debug("HOME_PATH" + AWSConfig.HOME_PATH);
+					//REGISTRY에 저장...
+					CommonUtil.WriteReg("HOME_PATH", AWSConfig.HOME_PATH);
+					try
+					{
+						AWSConfig.Load(AWSConfig.HOME_PATH + "\\Config\\AWSConfig.xml");
+					}
+					catch (Exception e1)
+					{
+						iLog.Debug(e1.ToString());
+						System.Windows.Forms.Application.Exit();
+					}
+
+				}
+				else
+				{
+					System.Windows.Forms.Application.Exit();
+				}
+			}
+
+			try
+			{
+				//프로그램 시작을 위한 설정/db파일 확인 및 생성
 				checkAccessFile();
 
 				m_MakeFileDate = new System.DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 22, 1, 0);
@@ -104,26 +139,6 @@ namespace AWS
 				makeThread = new Thread(new ThreadStart(makeDir));
 				makeThread.Name = "make file";
 				makeThread.Start();
-
-				this.init();
-
-				//add by sacoku
-				loggerCnt = AWS.Config.AWSConfig.sCount;
-				logger = new DataLogger[loggerCnt];
-				rLogger = new DataLogger[loggerCnt];
-				for (int i = 0; i < loggerCnt; i++)
-				{
-					if (AWS.Config.AWSConfig.sValue[i].enable)
-					{
-						Object lockObj = new object();
-						logger[i] = new DataLogger(this, i, false, lockObj);
-						if(AWSConfig.IS_REALTIME_RECOVERY)
-						{
-							rLogger[i] = new DataLogger(this, i, true, lockObj);
-						}
-					}
-
-				}
 
 				Assembly assemObj = Assembly.GetExecutingAssembly();
 				Version v = assemObj.GetName().Version; // 현재 실행되는 어셈블리..dll의 버전 가져오기
@@ -137,21 +152,44 @@ namespace AWS
 										minorV,
 										buildV,
 										revisionV,
-										new DateTime(2017,02,06).AddDays(buildV).AddSeconds(revisionV*2).ToString("yyyy-MM-dd"));
+										new DateTime(2017, 02, 06).AddDays(buildV).AddSeconds(revisionV * 2).ToString("yyyy-MM-dd"));
 
-				iLog.Info("Program Start");
-
-			} catch(Exception e)
-			{
-				iLog.Error(e.ToString());
+				//minor버젼이 홀수 일 경우 차트기능 enable
+				if ((minorV % 2) == 0) toolStripButton3.Visible = false;
+				else toolStripButton3.Visible = true;
 			}
-
+			catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
 		}
 
-        public void init()
-        {
- 
-        }
+		public void startLogger()
+		{
+			try
+			{
+				loggerCnt = AWS.Config.AWSConfig.sCount;
+				logger = new DataLogger[loggerCnt];
+				rLogger = new DataLogger[loggerCnt];
+				for (int i = 0; i < loggerCnt; i++)
+				{
+					if (AWS.Config.AWSConfig.sValue[i].enable)
+					{
+						Object lockObj = new object();
+						logger[i] = new DataLogger(this, i, false, lockObj);
+						if (AWSConfig.IS_REALTIME_RECOVERY)
+						{
+							rLogger[i] = new DataLogger(this, i, true, lockObj);
+							rLogger[i].KMACatchComplete = new AWS.CONTROL.OnComplete(historyForm.OnComplete);
+						}
+					}
+
+				}
+			} catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
+		}
 
         /// <summary>
         /// 데이터 표출 화면 클릭
@@ -166,9 +204,6 @@ namespace AWS
 
                 if (activeChild.Name != "DisplayForm2")
                 {
-                    //this.displayForm.Show();
-                    //this.displayForm.BringToFront();
-                    //this.displayForm.StartPosition = FormStartPosition.CenterScreen;
                     this.displayForm2.Show();
                     this.displayForm2.BringToFront();                    
                     this.displayForm2.StartPosition = FormStartPosition.CenterScreen;
@@ -176,7 +211,7 @@ namespace AWS
             }
             catch (Exception ex) 
             {
-                iLog.Error("toolStripButton1_Click : " + ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
 
@@ -203,7 +238,7 @@ namespace AWS
             }
             catch (Exception ex)
             {
-                iLog.Error("toolStripButton2_Click : " + ex.Message);
+                iLog.Error(ex.ToString());
             }
         }
        
@@ -220,12 +255,12 @@ namespace AWS
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("toolStripButton5_Click : " + ex.Message);
+                Debug.WriteLine(ex.ToString());
             }
         }
         
         /// <summary>
-        /// 환경 설정 폼 
+        /// 차트 표출 화면
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -237,9 +272,6 @@ namespace AWS
 
 				if (activeChild.Name != "GraphForm")
 				{
-					//this.displayForm.Show();
-					//this.displayForm.BringToFront();
-					//this.displayForm.StartPosition = FormStartPosition.CenterScreen;
 					this.graphForm.Show();
 					this.graphForm.BringToFront();
 					this.graphForm.StartPosition = FormStartPosition.CenterScreen;
@@ -247,34 +279,46 @@ namespace AWS
 			}
 			catch (Exception ex)
 			{
-				iLog.Error("toolStripButton1_Click : " + ex.Message);
+				iLog.Error(ex.ToString());
 			}
 		}
 
+		/// <summary>
+		/// 데이터 복원 POPUP 표출
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void toolStripButton5_Click_1(object sender, EventArgs e)
 		{
 			try
 			{
-				Form activeChild = this.ActiveMdiChild;
+				//Form activeChild = this.ActiveMdiChild;
 
-				HistoryPopup h = new HistoryPopup(this);
-				h.Show();
-
-				/*
-				if (activeChild.Name != "HistoryForm")
+				historyForm.FormClosing += (s, ea) =>
 				{
-					this.historyForm.Show();
-					this.historyForm.BringToFront();
-					this.historyForm.StartPosition = FormStartPosition.CenterScreen;
-				}
-				*/
+					base.OnFormClosing(ea);
+					if (ea.CloseReason == CloseReason.UserClosing)
+					{
+						ea.Cancel = true;
+						historyForm.Hide();
+						historyForm.Stop();
+					}
+				};
+
+				if (historyForm != null) historyForm.Show();
+				
 			}
 			catch (Exception ex)
 			{
-				iLog.Error("toolStripButton1_Click : " + ex.Message);
+				iLog.Error(ex.ToString());
 			}
 		}
 
+		/// <summary>
+		/// 설정 화면 표출
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void toolStripButton4_Click(object sender, EventArgs e)
 		{
 			try
@@ -302,8 +346,8 @@ namespace AWS
         {
             try
             {
-                //this.toolStripStatusLabel.Text = status;
-                //this.toolStripStatusLabel.ForeColor = foreColor;
+                this.toolStripStatusLabel.Text = "STATUS : " + status;
+                this.toolStripStatusLabel.ForeColor = foreColor;
             }
             catch (Exception ex)
             {
@@ -370,6 +414,7 @@ namespace AWS
         {
             try
             {
+				/*
                 Thread.Sleep(1);
 
                 if (image == 1)  // RED, TX
@@ -382,6 +427,7 @@ namespace AWS
                     this.toolStripStatusLabel1.Image = AWS.Properties.Resources.Ski_trail_rating_symbol_blue_circle;
                     this.toolStripStatusLabel2.Text = "RX";
                 }
+				*/
             }
             catch (Exception ex)
             {
@@ -391,13 +437,19 @@ namespace AWS
 
         private void checkAccessFile()
         {
-            string folderName = AWSConfig.HOME_PATH + "\\AccessFile";
+			try
+			{
+				string folderName = AWSConfig.HOME_PATH + "\\AccessFile";
 
-            if (!Directory.Exists(folderName))
-                Directory.CreateDirectory(folderName);
+				if (!Directory.Exists(folderName))
+					Directory.CreateDirectory(folderName);
 
-            AccessDBManager.GetInstance().CreateMinDatabase(folderName + @"\" +  "aws.mdb");
-			AccessDBManager.GetInstance().CreateMonthDatabase(folderName + @"\" + "aws_month.mdb");
+				AccessDBManager.GetInstance().CreateMinDatabase(folderName + @"\" + "aws.mdb");
+				AccessDBManager.GetInstance().CreateMonthDatabase(folderName + @"\" + "aws_month.mdb");
+			} catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
 		}
 
         private void makeDir()
@@ -461,32 +513,6 @@ namespace AWS
                         m_MakeFileDate = m_MakeFileDate.AddDays(+1);
                     }
                 }
-                Thread.Sleep(1000);
-            }
-        }
-
-        private void DataSyncMenuItem_Click(object sender, EventArgs e)
-        {
-            if (MessageBox.Show("데이터 동기화를 진행합니다.\r계속 하시겠습니까?", "진행 취소", MessageBoxButtons.YesNo) == DialogResult.No)
-                return;
-
-            DateTime currentTime = DateTime.Now;
-            String fileName = String.Format("{0:yyyyMMdd}", currentTime);
-            String year = String.Format("{0:yyyy}", currentTime);
-            String month = String.Format("{0:MM}", currentTime);
-            String day = String.Format("{0:dd}", currentTime);
-
-            iLog.Debug("dev count : " + AWS.Config.AWSConfig.sCount);
-            for (int i = 0; i < AWS.Config.AWSConfig.sCount; i++)
-            {
-                if (AWS.Config.AWSConfig.sValue[i].enable == false)
-                {
-                    iLog.Debug(i+ " DEV가 Disable 상태 입니다.");
-                    continue;
-                }
-
-                new System.Threading.Thread((idx) => { logger[(int)idx].RecoverLostData(currentTime, true); } ).Start(i);
-
                 Thread.Sleep(1000);
             }
         }
