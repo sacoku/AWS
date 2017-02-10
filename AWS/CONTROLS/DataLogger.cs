@@ -963,12 +963,13 @@ namespace AWS.CONTROL
 							Connect();
 
 							SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
-							iLog.Info(string.Format("[MESSAGE TO LOGGER] {0}/{1:00}/{2:00} {3:00}:{4:00} 과거 데이터 요청",
+							iLog.Info(string.Format("[MESSAGE TO LOGGER] {0}/{1:00}/{2:00} {3:00}:{4:00}:{5:00} 과거 데이터 요청",
 											startDateTime.Year,
 											startDateTime.Month,
 											startDateTime.Day,
 											startDateTime.Hour,
-											startDateTime.Minute));
+											startDateTime.Minute,
+											startDateTime.Second));
 							rows++;
 						}
 
