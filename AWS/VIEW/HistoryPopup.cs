@@ -206,29 +206,43 @@ namespace AWS.VIEW
 
 		public void OnComplete(int i, String msg)
 		{
-			ListView v = (ListView)((FieldInfo)Program.mf.historyForm.GetType()
-								.GetMember("listView" + (i+1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(Program.mf.historyForm);
-			ListViewItem lItem = new ListViewItem(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
-			lItem.SubItems.Add(msg);
-			v.Items.Insert(0, lItem);
+			try
+			{
+				ListView v = (ListView)((FieldInfo)Program.mf.historyForm.GetType()
+									.GetMember("listView" + (i + 1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(Program.mf.historyForm);
+				ListViewItem lItem = new ListViewItem(DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+				lItem.SubItems.Add(msg);
+				v.Items.Insert(0, lItem);
+			}
+			catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
 		}
 
 		private void button3_Click(object sender, EventArgs e)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				ListView v = (ListView)((FieldInfo)this.GetType().GetMember("listView" + (i + 1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(this);
+				try
+				{
+					ListView v = (ListView)((FieldInfo)this.GetType().GetMember("listView" + (i + 1), BindingFlags.Instance | BindingFlags.NonPublic)[0]).GetValue(this);
 
-				v.Clear();
+					v.Clear();
 
-				ColumnHeader cHeader = new ColumnHeader();
-				cHeader.Width = 100;
-				cHeader.Text = "수신시각";
-				v.Columns.Add(cHeader);
-				ColumnHeader cHeader2 = new ColumnHeader();
-				cHeader2.Width = 120;
-				cHeader2.Text = "복원 데이터";
-				v.Columns.Add(cHeader2);
+					ColumnHeader cHeader = new ColumnHeader();
+					cHeader.Width = 100;
+					cHeader.Text = "수신시각";
+					v.Columns.Add(cHeader);
+					ColumnHeader cHeader2 = new ColumnHeader();
+					cHeader2.Width = 120;
+					cHeader2.Text = "복원 데이터";
+					v.Columns.Add(cHeader2);
+				}
+				catch(Exception ex)
+				{
+					iLog.Error(ex.ToString());
+				}
 
 			}
 		}
