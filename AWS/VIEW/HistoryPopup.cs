@@ -152,19 +152,30 @@ namespace AWS.VIEW
 				   try
 				   {
 					   button1.Enabled = false;
-					   DateTime dt = monthCalendar1.SelectionStart;
-					   frm.rLogger[nLoggerIdx].bIsReadyToRun = false;
-					   frm.rLogger[nLoggerIdx].bIsReadyToRun2 = false;
-					   Thread.Sleep(2000);
-					   frm.rLogger[nLoggerIdx].bIsReadyToRun2 = true;
-					   frm.rLogger[nLoggerIdx].RecoverLostData(new DateTime(dt.Year, dt.Month, dt.Day, 23, 59, 0), false);
-					   button1.Enabled = true;
+					   frm.displayStatus(string.Format("{0} 사이트 {1} ~ {2}를 복원합니다.",
+											AWS.Config.AWSConfig.sValue[nLoggerIdx].Name,
+											monthCalendar1.SelectionStart.ToString("yyyy/MM/dd"),
+											monthCalendar1.SelectionEnd.ToString("yyyy/MM/dd")), Color.Blue);
 
-					   MessageBox.Show(string.Format("{1} 지점 {2}/{3}/{4} 일자의 데이터가 복원 되었습니다.",
-								   AWS.Config.AWSConfig.sValue[nLoggerIdx].Name,
-								   dt.Year,
-								   dt.Month,
-								   dt.Day));
+					   DateTime dt = monthCalendar1.SelectionStart;
+
+					   while (DateTime.Compare(dt, monthCalendar1.SelectionEnd) <= 0)
+					   {
+
+						   frm.rLogger[nLoggerIdx].bIsReadyToRun = false;
+						   frm.rLogger[nLoggerIdx].bIsReadyToRun2 = false;
+						   Thread.Sleep(2000);
+						   frm.rLogger[nLoggerIdx].bIsReadyToRun2 = true;
+						   frm.rLogger[nLoggerIdx].RecoverLostData(new DateTime(dt.Year, dt.Month, dt.Day, 23, 59, 0), false);
+						   button1.Enabled = true;
+
+						   MessageBox.Show(string.Format("{1} 지점 {2}/{3}/{4} 일자의 데이터가 복원 되었습니다.",
+									   AWS.Config.AWSConfig.sValue[nLoggerIdx].Name,
+									   dt.Year,
+									   dt.Month,
+									   dt.Day));
+						   dt = dt.AddDays(+1);
+					   }
 				   }
 				   catch (Exception ex)
 				   {

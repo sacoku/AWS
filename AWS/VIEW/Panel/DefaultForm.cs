@@ -266,37 +266,9 @@ namespace AWS.VIEW.Panel
                             //    ibValue[i].Text = "\r\n" + string.Format("{0:0}", (kma.Spare2_Sensor_2_Datas));
                             //    break;
 
-
-
-
                     }
                 }
-                /*
-                this.lblTemp.Text = string.Format("{0:0.0}", (returnKMA.Sensor_0_Datas / 10.0) - 100.0);
-                this.lblWindDir.Text = this.getDirection((returnKMA.Sensor_1_Datas / 10.0).ToString());
-                this.lblWindSpeed.Text = string.Format("{0:0.0}", returnKMA.Sensor_2_Datas / 10.0);
-                this.lblRain.Text = string.Format("{0:0.0}", (returnKMA.Sensor_5_Datas / 10.0));
-
-                if (returnKMA.Sensor_7_Datas > 0)
-                    this.lblIsRain.Text = "ON";
-                else
-                    this.lblIsRain.Text = "OFF";
-
-                this.lblPress.Text = string.Format("{0:0.0}", (returnKMA.Sensor_6_Datas / 10.0)); //기압
-                this.lblHumidity.Text = string.Format("{0:0}", returnKMA.Sensor_9_Datas / 10.0); // 습도
-                this.lblWaterOfSurface.Text = (returnKMA.Spare_Sensor_0_Datas / 10.0).ToString(); //노면수막높이
-                this.lblFreezingOfSurface.Text = string.Format("{0:0}", returnKMA.Spare_Sensor_1_Datas / 10); //노면결빙율             
-                this.lblTempOfSurface.Text = string.Format("{0:0.0}", (returnKMA.Spare_Sensor_3_Datas / 10.0) - 100.0); //노면온도
-                this.lblFreezingTempOfSurface.Text = string.Format("{0:0.0}", (returnKMA.Spare_Sensor_4_Datas / 10.0) - 100.0);  //노면동결온도
-                this.lblSnowOfSurface.Text = string.Format("{0:0.0}", returnKMA.Spare_Sensor_5_Datas / 10.0); //노면적설
-                this.lblSaltOfSurface.Text = string.Format("{0:0.0}", returnKMA.Spare_Sensor_6_Datas / 10.0); //노면염분온도 
-                this.lblFrictionOfSurface.Text = (returnKMA.Spare_Sensor_7_Datas / 10.0).ToString(); //노면마찰
-                this.lblVisibility.Text = returnKMA.Spare1_Sensor_1_Datas.ToString();   //시정
-                this.lblCurrentWeather.Text = string.Format("{0:D2}", returnKMA.Spare2_Sensor_2_Datas);   //현천
-                this.lblStatusOfSurface.Text = this.getStatusOfLoad(returnKMA.Spare_Sensor_2_Datas.ToString()); //노면상태
-                this.lblCodeOfSurface.Text = this.getLoadStatusCode(returnKMA.Spare_Sensor_8_Datas.ToString()); // 노면날씨코드
-                */
-            }
+			}
             catch (Exception ex)
             {
                 iLog.Error(ex.ToString());

@@ -41,6 +41,14 @@ namespace AWS.MODEL
             m_ProtocolItems = new System.Collections.ArrayList();
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="nBufferSize"></param>
+		/// <param name="bUsing"></param>
+		/// <param name="CheckFunc"></param>
+		/// <param name="CatchFunc"></param>
+		/// <returns></returns>
         public bool AddProtocolItem(int nBufferSize, bool bUsing, CheckFunction CheckFunc, CatchFunction CatchFunc)
         {
             ProtocolItem pI = new ProtocolItem();
@@ -54,6 +62,10 @@ namespace AWS.MODEL
             return true;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="data"></param>
         public void ProtocolProcessing(byte data)
         {
             try

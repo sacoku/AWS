@@ -183,6 +183,8 @@ namespace AWS.CONTROLS
 			{
 				if (oe.Message.Contains("ORA-00001"))
 					iLog.Error("오라클에 이미 존재하는 데이터 입니다.");
+				else
+					iLog.Error(oe.ToString());
 			}
 			catch (Exception e)
 			{

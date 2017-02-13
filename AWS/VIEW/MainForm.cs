@@ -17,6 +17,7 @@ using AWS.Config;
 using AWS.UTIL;
 using System.Data.OleDb;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 #pragma warning disable 0168
 
@@ -42,6 +43,8 @@ namespace AWS
         //add by shkim
         public DisplayForm2 displayForm2 = null;
         private int loggerCnt = 0;
+
+		private object lockobj = new object();
 
         public MainForm()
         {
@@ -342,12 +345,16 @@ namespace AWS
 		/// </summary>
 		/// <param name="status"></param>
 		/// <param name="foreColor"></param>
+//		[MethodImpl(MethodImplOptions.Synchronized)]
 		public void displayStatus(String status, Color foreColor)
         {
             try
             {
-                this.toolStripStatusLabel.Text = "STATUS : " + status;
-                this.toolStripStatusLabel.ForeColor = foreColor;
+				lock (lockobj)
+				{
+					this.toolStripStatusLabel.Text = "STATUS : " + status;
+					this.toolStripStatusLabel.ForeColor = foreColor;
+				}
             }
             catch (Exception ex)
             {
@@ -410,11 +417,12 @@ namespace AWS
            
         }
 
-        public void setTXRX(int image)
+//		[MethodImpl(MethodImplOptions.Synchronized)]
+/*
+		public void setTXRX(int image)
         {
             try
             {
-				/*
                 Thread.Sleep(1);
 
                 if (image == 1)  // RED, TX
@@ -427,13 +435,13 @@ namespace AWS
                     this.toolStripStatusLabel1.Image = AWS.Properties.Resources.Ski_trail_rating_symbol_blue_circle;
                     this.toolStripStatusLabel2.Text = "RX";
                 }
-				*/
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("setTXRX : " + ex.Message);
             }
         }
+*/
 
         private void checkAccessFile()
         {

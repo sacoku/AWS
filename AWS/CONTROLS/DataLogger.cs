@@ -70,6 +70,16 @@ namespace AWS.CONTROL
 		private object connLock = null;
 		public OnComplete KMACatchComplete = null;
 
+		private EventWaitHandle waitForRcvSignal = new EventWaitHandle(false, EventResetMode.AutoReset);
+		private DateTime currReqDateTime;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="main"></param>
+		/// <param name="idx"></param>
+		/// <param name="isRecovery"></param>
+		/// <param name="lockObj"></param>
         public DataLogger(MainForm main, int idx, Boolean isRecovery, object lockObj)
         {
 			iLog = log4net.LogManager.GetLogger("Dev" + idx);
@@ -81,7 +91,6 @@ namespace AWS.CONTROL
 
 			lockObject = lockObj;
 			connLock = new object();
-
 
 			protocol.AddProtocolItem(Marshal.SizeOf(typeof(KMAAnswer2)), true, new CheckFunction(HeaderTailCheck2), new CatchFunction(AnswerProtocolCatch2));	// 응답 프로토콜
             //로거 상태
@@ -123,24 +132,13 @@ namespace AWS.CONTROL
 
                 iLog.Error(AWSConfig.sValue[iPanelIdx].Name + " : " + E.ToString());
             }
-
-			try
-			{
-				//add by sacoku - 실시간 데이터 복구 모드 추가
-				/*
-				if (bRealTimeRecovery)
-				{
-					iLog.Info("복구 모드가 실시간으로 동작합니다.");
-					StartWatchDog();
-				}
-				*/
-			}
-			catch(Exception e)
-			{
-				iLog.Error(AWSConfig.sValue[iPanelIdx].Name + " : " + e.ToString());
-			}
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
         public void OnDisconnected(object sender, EventArgs e)
         {
             try
@@ -161,6 +159,9 @@ namespace AWS.CONTROL
 
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
         private void Connect()
         {
 			try
@@ -200,6 +201,9 @@ namespace AWS.CONTROL
 			}
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
 		private void DisConnect()
 		{
 			try
@@ -220,6 +224,11 @@ namespace AWS.CONTROL
 			}
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="str"></param>
+		/// <returns></returns>
         public byte[] StrToByteArray(string str)
         {
             System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
@@ -267,7 +276,8 @@ namespace AWS.CONTROL
 						try
 						{
 							DateTime nowDt = DateTime.Now;
-							if ((m_CollectDt.Minute <= nowDt.Minute) && (nowDt.Second > 30))
+							//if ((m_CollectDt.Minute <= nowDt.Minute) && (nowDt.Second > 30))
+							if (DateTime.Compare(m_CollectDt,nowDt) <= 0 && (nowDt.Second > 30))
 							{
 								Connect();
 								//Thread.Sleep(3000);
@@ -312,11 +322,15 @@ namespace AWS.CONTROL
 			}
 			catch(Exception e)
 			{
-				iLog.Error(e.Message);
-				iLog.Error(e.StackTrace);
+				iLog.Error(e.ToString());
 			}
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
         private void OnReceived(object sender, ReceivedEventArgs e)
         {
             for (int i = 0; i < e.Data.Length; i++)
@@ -325,12 +339,22 @@ namespace AWS.CONTROL
             }
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="Dt"></param>
+		/// <param name="command"></param>
         public void SendCommand(DateTime Dt, byte[] command)
         {
             SendCommand((byte)(Dt.Year - 2000), (byte)Dt.Month, (byte)Dt.Day, (byte)Dt.Hour, (byte)Dt.Minute, (byte)Dt.Second, (ushort)this.environment.LoggerID, (ushort)1111, command);
         }
 
-
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="Dt"></param>
+		/// <param name="Password"></param>
+		/// <param name="command"></param>
         public void SendCommandPassword(DateTime Dt, ushort Password, byte[] command)
         {
             try
@@ -365,6 +389,11 @@ namespace AWS.CONTROL
             }
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="Dt"></param>
+		/// <param name="command"></param>
         public void SendCommnad(DateTime Dt, byte[] command)
         {
             try
@@ -400,6 +429,12 @@ namespace AWS.CONTROL
             }
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="Dt"></param>
+		/// <param name="LoggerID"></param>
+		/// <param name="command"></param>
         public void SendCommandLoggerID(DateTime Dt, ushort LoggerID, byte[] command)
         {
             try
@@ -435,6 +470,11 @@ namespace AWS.CONTROL
             }
         }
         
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="Dt"></param>
+		/// <param name="command"></param>
         public void WeatherSendCommand(DateTime Dt, byte[] command)
         {
             try
@@ -472,6 +512,18 @@ namespace AWS.CONTROL
             }
         }
         
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="year"></param>
+		/// <param name="month"></param>
+		/// <param name="day"></param>
+		/// <param name="hour"></param>
+		/// <param name="minute"></param>
+		/// <param name="second"></param>
+		/// <param name="loggerID"></param>
+		/// <param name="password"></param>
+		/// <param name="command"></param>
         public void SendCommand(byte year, byte month, byte day, byte hour, byte minute, byte second, ushort loggerID, ushort password, byte[] command)
         {
             try
@@ -505,23 +557,26 @@ namespace AWS.CONTROL
                         datas[26] += datas[i];
                     }
 
-					int j = 0;
-					while (!this.ClientSocket.Connected())
+					if (ClientSocket != null)
 					{
-						if ( (j%10) == 0)
-							iLog.Debug("전송 전 연결 대기 중입니다.");
-
-						if (j > 30)
+						int j = 0;
+						while (!this.ClientSocket.Connected())
 						{
-							throw new Exception("전송 전 접속대기 Timeout 초과");
+							if ((j % 10) == 0)
+								iLog.Debug("전송 전 연결 대기 중입니다.");
+
+							if (j > 100)
+							{	
+								throw new Exception("전송 전 접속대기 Timeout 초과");
+							}
+							j++;
+							Thread.Sleep(500);
 						}
-						j++;
-						Thread.Sleep(100);
+
+						ClientSocket.Send(datas);
 					}
 
-                    ClientSocket.Send(datas);
-                    
-                    this.mainForm.setTXRX(1);
+//					this.mainForm.setTXRX(1);
                     // 현재 데이터를 요구한다
                     string[] data = new string[2];
                     data[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -567,7 +622,7 @@ namespace AWS.CONTROL
                         data[1] = "데이터로거에 과거자료 요청";
                     }
 
-                    this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " : " + data[1], Color.Red);
+                    //this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " : " + data[1], Color.Red);
                     iLog.Debug(AWSConfig.sValue[iPanelIdx].Name + " : " + data[0] + " " + data[1]);
                 }
             }
@@ -579,6 +634,12 @@ namespace AWS.CONTROL
             }
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="queue"></param>
+		/// <returns></returns>
         public bool KMALoggerInfoHeaderTailCheck(object sender, CircleQueue queue)
         {
             if (queue.Buffer[(queue.Sp + 6 + queue.Size) % queue.Size] != 0x20) return false;
@@ -601,6 +662,12 @@ namespace AWS.CONTROL
             return true;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="queue"></param>
+		/// <returns></returns>
         public bool KMA2HeaderTailCheck(object sender, CircleQueue queue)
         {
             if (queue.Buffer[(queue.Sp + 0 + queue.Size) % queue.Size] != 0xFA) return false;		// Header Check
@@ -610,6 +677,12 @@ namespace AWS.CONTROL
             return true;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="queue"></param>
+		/// <returns></returns>
         public bool ReseponseHeaderTailCheck(object sender, CircleQueue queue)
         {
             if (queue.Buffer[(queue.Sp + 0 + queue.Size) % queue.Size] != (byte)'O')
@@ -623,6 +696,12 @@ namespace AWS.CONTROL
             return true;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="Data"></param>
+		/// <returns></returns>
         public bool ReseponseProtocolCatch(object sender, byte[] Data)
         {
             string result = Encoding.ASCII.GetString(Data);
@@ -630,15 +709,21 @@ namespace AWS.CONTROL
             data[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             data[1] = result + " 수신";
 
-            this.mainForm.displayStatus(result, Color.Blue);
+            //this.mainForm.displayStatus(result, Color.Blue);
 
             return true;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="Data"></param>
+		/// <returns></returns>
         public bool KMALoggerInfoHeaderTailCatch(object sender, byte[] Data)
         {
             string[] data = new string[2];
-            data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+            data[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             data[1] = " 데이터로거 정보 수신";
 
             return true;
@@ -666,7 +751,7 @@ namespace AWS.CONTROL
 
                         data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                         data[1] = "지점번호를 성공적으로 수정했습니다.";
-                        this.mainForm.displayStatus(data[1], Color.Red);
+                        //this.mainForm.displayStatus(data[1], Color.Red);
                                      
                         original = this.environment.LoggerID.ToString();
 
@@ -681,7 +766,7 @@ namespace AWS.CONTROL
                         data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                         data[1] = "패스워드가 성공적으로 수정되었습니다.";
                         this.environment.PASSWORD = this.newPassword.ToString();
-                        this.mainForm.displayStatus(data[1], Color.Blue);
+                        //this.mainForm.displayStatus(data[1], Color.Blue);
 
                         Properties.Settings.Default.PASSWORD = this.newPassword.ToString();
                         Properties.Settings.Default.Save();
@@ -690,23 +775,26 @@ namespace AWS.CONTROL
                     {
                         data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                         data[1] = "시간이 성공적으로 수정되었습니다.";
-                        this.mainForm.displayStatus(data[1], Color.Blue);
+                        //this.mainForm.displayStatus(data[1], Color.Blue);
                     }
                     else if (protocolAnswer.Type == (byte)'R') //날짜 시간 세팅 성공
                     {
                         data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                         data[1] = "데이터로거를 성공적으로 재시작했습니다.";
-                        this.mainForm.displayStatus(data[1], Color.Blue);
+                        //this.mainForm.displayStatus(data[1], Color.Blue);
                     }
                     else if (protocolAnswer.Type == (byte)'C') //날짜 시간 세팅 성공
                     {
                         data[0] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                         data[1] = "데이터로거의 버퍼를 성공적으로 클리어했습니다.";
-                        this.mainForm.displayStatus(data[1], Color.Blue);
+                       //this.mainForm.displayStatus(data[1], Color.Blue);
                     }
-                }
+                } else
+				{
+					throw new Exception("Nak Received..");
+				}
                 this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " : " + data[1], Color.Blue);
-                this.mainForm.setTXRX(0);
+//                this.mainForm.setTXRX(0);
                 isCommand = false;
 
                 iLog.Debug(AWSConfig.sValue[iPanelIdx].Name + " : " + data[0] + " " + data[1]);
@@ -723,6 +811,9 @@ namespace AWS.CONTROL
 			return true;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
         public void CloseLogger()
         {
             this.flag = false;
@@ -731,7 +822,12 @@ namespace AWS.CONTROL
                 this.ClientSocket.Close();
         }     
     
-
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="Data"></param>
+		/// <returns></returns>
         public bool KMA2Catch(object sender, byte[] Data)
         {
             bool bResult = false;
@@ -766,9 +862,10 @@ namespace AWS.CONTROL
                     && (receive.Hour == DateTime.Now.Hour) 
 					&& (receive.Minute == DateTime.Now.Minute) )
 				{
-					this.mainForm.setTXRX(0);
-                    this.m_CollectDt += new TimeSpan(0, 0, 1, 0, 0);
-                    String[] dispalyData = new String[2];
+//					this.mainForm.setTXRX(0);
+					//this.m_CollectDt += new TimeSpan(0, 0, 1, 0, 0);
+					this.m_CollectDt = this.m_CollectDt.AddMinutes(+1);
+					String[] dispalyData = new String[2];
 
                     KMA2 displayKMA2 = new KMA2();
                     displayKMA2 = KMA2.SetByte(Data);
@@ -783,7 +880,7 @@ namespace AWS.CONTROL
                     dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                     dispalyData[1] = receivedTime[1] + "현재 데이터 수신";
 
-					this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
+					//this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
 
                     //SafeInvokeHelper.Invoke(this.mainForm.displayForm, "DisplayData", displayKMA2);
                     SafeInvokeHelper.Invoke(this.mainForm.displayForm2, "DisplayData", displayKMA2, iPanelIdx);
@@ -829,7 +926,19 @@ namespace AWS.CONTROL
                     dispalyData[1] = result + "과거 데이터 수신";
 
 					if (KMACatchComplete != null) KMACatchComplete(iPanelIdx, lastReceive.ToString("yyyy-MM-dd hh:mm"));
-					this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
+					//this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
+
+					/*
+					if (DateTime.Compare(currReqDateTime, lastReceive) == 0)
+					{
+						iLog.Debug(lastReceive.ToString("yyyy-MM-dd HH:mm") + " 데이터를 수신했습니다.");
+						waitForRcvSignal.Set();
+					}
+					else
+					{
+						iLog.Debug("기다리는 데이터 " + currReqDateTime.ToString("yyyy-MM-dd HH:mm") + " 데이터를 수신하지 못했습니다.");
+					}
+					*/
 
 					Thread WeatherProcThread = new Thread(new ParameterizedThreadStart(saveData.saveLastData));
                     WeatherProcThread.Name = "WeatherThread";
@@ -850,6 +959,11 @@ namespace AWS.CONTROL
 			return bResult;
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="data"></param>
+		/// <returns></returns>
         public ushort ByteChange(ushort data)
         {
             byte[] Temp = System.BitConverter.GetBytes(data);
@@ -860,18 +974,27 @@ namespace AWS.CONTROL
             return System.BitConverter.ToUInt16(Temp2, 0);
         }
 
+		/// <summary>
+		/// Pause
+		/// </summary>
         public void Pause()
         {
             isPause = true;
             iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " 장치가 Pause 상태입니다.");
         }
 
+		/// <summary>
+		/// Resume
+		/// </summary>
         public void Resume()
         {
             isPause = false;
             iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " 장치가 Resume 상태입니다.");
         }
 
+		/// <summary>
+		/// 현재일자의 빠진 데이터를 복원하기 위한 함수
+		/// </summary>
         public void StartWatchDog()
         {
 
@@ -891,6 +1014,11 @@ namespace AWS.CONTROL
 			}
 		}
 
+		/// <summary>
+		/// 과거 데이터 요청 함수
+		/// </summary>
+		/// <param name="dt">시작 datetime</param>
+		/// <param name="isPauseMode">외부에서 pause/resume 제어 모드</param>
         public void RecoverLostData(DateTime dt, Boolean isPauseMode)
         {
             OleDbConnection con = null;
@@ -976,11 +1104,18 @@ namespace AWS.CONTROL
 						//else
 						//	iLog.Debug(startDateTime + " 존재하는 데이터 입니다.");
 
-							startDateTime = startDateTime.AddMinutes(+1); 
-							if (result == null || result.Length <= 0)
-								Thread.Sleep(AWSConfig.RCSOD * 1000);
-							else
-								Thread.Sleep(10);
+						startDateTime = startDateTime.AddMinutes(+1);
+						if (result == null || result.Length <= 0)
+						{
+							Thread.Sleep(AWSConfig.RCSOD * 1000);
+							//currReqDateTime = startDateTime;
+							//if (waitForRcvSignal.WaitOne(AWSConfig.RCSOD * 1000))
+								//startDateTime = startDateTime.AddMinutes(+1);
+							//else
+								//iLog.Debug("수신 이벤트를 받지 못했기 때문에 다시 요청합니다.");
+						}
+						else
+							Thread.Sleep(10);
 					}
 
 					if (isPauseMode) Resume();

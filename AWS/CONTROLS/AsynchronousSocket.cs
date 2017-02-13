@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using log4net;
 using AWS.Config;
+using System.Runtime.CompilerServices;
 
 namespace AWS.CONTROLS
 {
@@ -60,22 +61,34 @@ namespace AWS.CONTROLS
 
         public AsynchronousSocket(Socket sock, IPEndPoint remoteEP, int idx)
         {
-			iLog = log4net.LogManager.GetLogger("Dev" + idx);
-			nIdx = idx;
+			try
+			{
+				iLog = log4net.LogManager.GetLogger("Dev" + idx);
+				nIdx = idx;
 
-			buffer = new byte[BufferSize];
-            workSocket = sock;
-            workSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+				buffer = new byte[BufferSize];
+				workSocket = sock;
+				workSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
 
-            iep = remoteEP;
-            workSocket.BeginConnect(remoteEP, new AsyncCallback(Connected), sock);
+				iep = remoteEP;
+				workSocket.BeginConnect(remoteEP, new AsyncCallback(Connected), sock);
+			}
+			catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
         }
 
+		/// <summary>
+		/// 접속 callback
+		/// </summary>
+		/// <param name="iar"></param>
         private void Connected(IAsyncResult iar)
         {
             workSocket = (Socket)iar.AsyncState;
             try
             {
+				if (workSocket == null) throw new Exception("workSocket이 NULL입니다.");
                 workSocket.EndConnect(iar);
 
 				// 접속된 소켓에 비동기 Receive 설정
@@ -150,28 +163,67 @@ namespace AWS.CONTROLS
                 }
             }
         }
-        /// <summary>
-        /// 데이터를 보낼때 사용하는 비동기 함수
-        /// </summary>
-        /// <param name="handler"></param>
-        /// <param name="data"></param>
-        public void Send(byte[] data)
+		/// <summary>
+		/// 데이터를 보낼때 사용하는 비동기 함수
+		/// </summary>
+		/// <param name="handler"></param>
+		/// <param name="data"></param>
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public void Send(byte[] data)
         {
-            workSocket.Send(data, 0, data.Length, SocketFlags.None);
+			try
+			{
+				if (Connected())
+				{
+					workSocket.Send(data, 0, data.Length, SocketFlags.None);
+				}
+			} catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
         }
 
-        public bool Connected()
+		/// <summary>
+		/// 접속 확인을 위한 함수
+		/// </summary>
+		/// <returns>접속여부</returns>
+		public bool Connected()
         {
-            return this.workSocket.Connected;
+			try
+			{
+				return this.workSocket.Connected;
+			} 
+			catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+				return false;
+			}
         }
 
-        public int SendLength(byte[] data, int length)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="data">보낼 데이터</param>
+		/// <param name="length">보낼 데이터의 length</param>
+		/// <returns></returns>
+		public int SendLength(byte[] data, int length)
         {
-            // Begin sending the data to the remote device.
-            return workSocket.Send(data, 0, length, SocketFlags.None);
+			// Begin sending the data to the remote device.
+			try
+			{
+				return workSocket.Send(data, 0, length, SocketFlags.None);
+			}
+			catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+				return 0;
+			}
         }
 
-        public void Close()
+		/// <summary>
+		/// 접속 종료 함수
+		/// </summary>
+		public void Close()
         {
 			try
             {
