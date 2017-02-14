@@ -837,19 +837,7 @@ namespace AWS.CONTROL
                 this.saveData.kma2 = new KMA2(); // 기상데이터 프로토콜 처리 클래스 생성
                 saveData.kma2 = KMA2.SetByte(Data); // 기상데이터 프로토콜에 데이터를 넣는다.  
 
-                iLog.Debug(   " 데이터 저장 [" 
-							+ ((int)saveData.kma2.Year) 
-							+ "/" 
-							+ (int)saveData.kma2.Month 
-							+ "/" 
-							+ (int)saveData.kma2.Day 
-							+ " " 
-							+ (int)saveData.kma2.Hour 
-							+ ":" 
-							+ (int)saveData.kma2.Minute 
-							+ "]");
-
-                DateTime receive = new DateTime( 2000 + ((int)saveData.kma2.Year)
+				DateTime receive = new DateTime( 2000 + ((int)saveData.kma2.Year)
 												, (int)saveData.kma2.Month
 												, (int)saveData.kma2.Day
 												, (int)saveData.kma2.Hour

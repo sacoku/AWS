@@ -47,18 +47,32 @@ namespace AWS.CONTROLS
                 if (conn != null) Close();
                 conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + dataSourceFile);
                 conn.Open();
-                return conn;
-            } catch(Exception e)
+
+				iLog.Info(string.Format("Access DB[{0}]에 접속되었습니다.", dataSourceFile));
+			} catch(Exception e)
             {
-                iLog.Error(e.Message);
-                throw e;
+				conn = null;
+				iLog.Error(e.Message);
             }
-        }
+
+			return conn;
+		}
 
         public void Close()
         {
-            if (conn != null) conn.Close();
-            conn = null;
+			try
+			{
+				if (conn != null)
+				{
+					conn.Close();
+					conn = null;
+					iLog.Info("Access DB 접속이 해제 되었습니다.");
+				}
+			}
+			catch(Exception ex)
+			{
+				iLog.Error(ex.ToString());
+			}
         }
 
         public bool CreateMinDatabase(string fullFilename)

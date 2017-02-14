@@ -163,9 +163,8 @@ namespace AWS.VIEW
 
 					   while (DateTime.Compare(dt, monthCalendar1.SelectionEnd) <= 0)
 					   {
-
-						   frm.rLogger[nLoggerIdx].bIsReadyToRun = false;
 						   frm.rLogger[nLoggerIdx].bIsReadyToRun2 = false;
+						   frm.rLogger[nLoggerIdx].bIsReadyToRun = false;
 						   Thread.Sleep(2000);
 						   frm.rLogger[nLoggerIdx].bIsReadyToRun2 = true;
 						   frm.rLogger[nLoggerIdx].RecoverLostData(new DateTime(dt.Year, dt.Month, dt.Day, 23, 59, 0), false);

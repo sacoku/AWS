@@ -52,23 +52,25 @@ namespace AWS.CONTROLS
                 conn.Open();
 
                 iLog.Info("오라클에 접속되었습니다.");
-
-                return conn;
             } catch(Exception e)
             {
+				conn = null;
                 iLog.Error(e.Message);
-                throw e;
             }
-        }
+
+			return conn;
+		}
 
         public void Close()
         {
             try
             {
-                if (conn != null) conn.Close();
-                conn = null;
-
-                iLog.Info("오라클에 접속이 해제되었습니다.");
+				if (conn != null)
+				{
+					conn.Close();
+					conn = null;
+					iLog.Info("오라클에 접속이 해제되었습니다.");
+				}
             } 
             catch(Exception e)
             {

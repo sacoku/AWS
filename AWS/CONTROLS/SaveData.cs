@@ -103,7 +103,10 @@ namespace AWS.CONTROL
 				this.checkAccessFile(receive);
 
                 am = new AccessDBManager(this.dev_idx);
-                am.Connect(todayAccessDBFile);
+                if(am.Connect(todayAccessDBFile) == null)
+				{
+					throw new Exception(string.Format("Access DB[{0}] 접속에 실패 했습니다.", todayAccessDBFile));
+				}
 
                 //최소/최대 값을 읽어옴...
                 double[] max_value = am.GetSensorMaxData();
@@ -117,16 +120,23 @@ namespace AWS.CONTROL
 				if (d != null)
 				{
 					am.Close();
-					am.Connect(MonthAccessDBFile);
+					if(am.Connect(MonthAccessDBFile) == null)
+					{
+						throw new Exception(string.Format("Access DB[{0}] 접속에 실패 했습니다.", MonthAccessDBFile));
+					}
 					am.UpdateMonthData(receive, d);
 				}
 
                 om = new OracleDBManager(dev_idx);
-                om.Connect();
+                if(om.Connect() == null)
+				{
+					throw new Exception("오라클 접속에 실패했습니다.");
+				}
+
 				om.InsertAwsStampData(dev_idx, receive, kma2, min_value, max_value);
 				om.UpdateLastTimeCall(receive, AWSConfig.sValue[dev_idx].LocNum);
 
-				iLog.Info(string.Format("현재자료 저장[{0}] : {1}/{2:00}/{3:00} {4:00}/{5:00}",
+				iLog.Info(string.Format("현재자료 저장[{0}] : {1}/{2:00}/{3:00} {4:00}:{5:00}",
 							todayAccessDBFile, 
 							receive.Year,
 							receive.Month,
@@ -166,7 +176,10 @@ namespace AWS.CONTROL
                 this.checkAccessFile(receive);
 
                 am = new AccessDBManager(dev_idx);
-                am.Connect(todayAccessDBFile);
+                if(am.Connect(todayAccessDBFile) == null)
+				{
+					throw new Exception(string.Format("Access DB[{0}] 접속에 실패 했습니다.", todayAccessDBFile));
+				}
 
                 //최소/최대 값을 읽어옴...
                 double[] max_value = am.GetSensorMaxData();
@@ -176,7 +189,11 @@ namespace AWS.CONTROL
                 am.InsertSensorData(receive, (int)o, lastKma2, min_value, max_value);
 				
                 om = new OracleDBManager(dev_idx);
-                om.Connect();
+                if(om.Connect() == null)
+				{
+					throw new Exception("오라클 접속에 실패했습니다.");
+				}
+
                 om.InsertAwsStampData((int)o, receive, lastKma2, min_value, max_value);
                 //om.UpdateLastTimeCall(receive, AWSConfig.sValue[(int)o].LocNum);
 
@@ -256,7 +273,10 @@ namespace AWS.CONTROL
 					try
 					{
 						am = new AccessDBManager(dev_idx);
-						am.Connect(monthAccessDBFile);
+						if(am.Connect(monthAccessDBFile) == null)
+						{
+							throw new Exception(string.Format("Access DB[{0}] 접속에 실패 했습니다.", todayAccessDBFile));
+						}
 						am.InsertMonthBaseData(monthAccessDBFile);
 					}
 					catch(Exception e)
