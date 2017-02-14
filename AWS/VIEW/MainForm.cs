@@ -79,6 +79,8 @@ namespace AWS
 
 				iLog.Info("Program Start");
 
+				this.CenterToScreen();
+
 			} catch(Exception e)
 			{
 				iLog.Error(e.ToString());

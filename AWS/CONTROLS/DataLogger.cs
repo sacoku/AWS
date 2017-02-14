@@ -863,26 +863,15 @@ namespace AWS.CONTROL
 					&& (receive.Minute == DateTime.Now.Minute) )
 				{
 //					this.mainForm.setTXRX(0);
-					//this.m_CollectDt += new TimeSpan(0, 0, 1, 0, 0);
 					this.m_CollectDt = this.m_CollectDt.AddMinutes(+1);
-					String[] dispalyData = new String[2];
-
-                    KMA2 displayKMA2 = new KMA2();
-                    displayKMA2 = KMA2.SetByte(Data);
+                    KMA2 displayKMA2 = KMA2.SetByte(Data);
 
 					iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + receive.ToString("yyyy-MM-dd HH:mm") + " 현재 데이터 수신");
 
 					// 데이터를 받으면 무조건 시간을 증가 시킨다.
 					String resultData = this.saveData.getResult(iPanelIdx);
-
                     String[] receivedTime = resultData.Split(',');
 
-                    dispalyData[0] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                    dispalyData[1] = receivedTime[1] + "현재 데이터 수신";
-
-					//this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
-
-                    //SafeInvokeHelper.Invoke(this.mainForm.displayForm, "DisplayData", displayKMA2);
                     SafeInvokeHelper.Invoke(this.mainForm.displayForm2, "DisplayData", displayKMA2, iPanelIdx);
 
 					/*
@@ -895,8 +884,7 @@ namespace AWS.CONTROL
 				} 
                 else
                 {
-					this.saveData.kma2 = new KMA2(); // 기상데이터 프로토콜 처리 클래스 생성
-                    saveData.lastKma2 = KMA2.SetByte(Data); // 기상데이터 프로토콜에 데이터를 넣는다.  
+					saveData.lastKma2 = KMA2.SetByte(Data); // 기상데이터 프로토콜에 데이터를 넣는다.  
                     saveData.ByteChangAllLastData();
 
 					DateTime lastReceive = new DateTime(2000 + ((int)saveData.lastKma2.Year)
@@ -907,38 +895,7 @@ namespace AWS.CONTROL
 
 					iLog.Info(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + lastReceive.ToString("yyyy-MM-dd hh:mm") + " 과거 데이터 수신");
 
-					// 데이터를 받으면 무조건 시간을 증가 시킨다.
-					String resultData = this.saveData.getResult(iPanelIdx);
-                    String[] dispalyData = new String[2];
-                    String[] receivedTime = resultData.Split(',');
-
-                    String result = string.Format("{0:00}", saveData.lastKma2.Year + 2000) 
-								  + "/" 
-								  + string.Format("{0:00}", saveData.lastKma2.Month) 
-								  + "/" 
-								  + string.Format("{0:00}", saveData.lastKma2.Day) 
-								  + " " 
-								  +  string.Format("{0:00}", saveData.lastKma2.Hour) 
-								  + ":" 
-								  + string.Format("{0:00}", saveData.lastKma2.Minute);
-
-					dispalyData[0] = lastReceive.ToString("yyyy-MM-dd hh:mm"); // DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
-                    dispalyData[1] = result + "과거 데이터 수신";
-
 					if (KMACatchComplete != null) KMACatchComplete(iPanelIdx, lastReceive.ToString("yyyy-MM-dd hh:mm"));
-					//this.mainForm.displayStatus(AWSConfig.sValue[iPanelIdx].Name + " [MESSAGE FROM LOGGER] " + dispalyData[0] + " " + dispalyData[1], Color.Blue);
-
-					/*
-					if (DateTime.Compare(currReqDateTime, lastReceive) == 0)
-					{
-						iLog.Debug(lastReceive.ToString("yyyy-MM-dd HH:mm") + " 데이터를 수신했습니다.");
-						waitForRcvSignal.Set();
-					}
-					else
-					{
-						iLog.Debug("기다리는 데이터 " + currReqDateTime.ToString("yyyy-MM-dd HH:mm") + " 데이터를 수신하지 못했습니다.");
-					}
-					*/
 
 					Thread WeatherProcThread = new Thread(new ParameterizedThreadStart(saveData.saveLastData));
                     WeatherProcThread.Name = "WeatherThread";

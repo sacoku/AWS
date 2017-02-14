@@ -97,6 +97,8 @@ namespace AWS.VIEW
 
 					v.GridLines = true;
 
+					this.CenterToScreen();
+
 				}
 			} 
 			catch(Exception ex)
@@ -168,14 +170,15 @@ namespace AWS.VIEW
 						   frm.rLogger[nLoggerIdx].bIsReadyToRun2 = true;
 						   frm.rLogger[nLoggerIdx].RecoverLostData(new DateTime(dt.Year, dt.Month, dt.Day, 23, 59, 0), false);
 						   button1.Enabled = true;
-
-						   MessageBox.Show(string.Format("{1} 지점 {2}/{3}/{4} 일자의 데이터가 복원 되었습니다.",
-									   AWS.Config.AWSConfig.sValue[nLoggerIdx].Name,
-									   dt.Year,
-									   dt.Month,
-									   dt.Day));
+						   
 						   dt = dt.AddDays(+1);
+
 					   }
+
+					   MessageBox.Show(string.Format("{1} 지점 {2}~{3} 일자의 데이터가 복원 되었습니다.",
+										AWS.Config.AWSConfig.sValue[nLoggerIdx].Name,
+										monthCalendar1.SelectionStart.ToString("yyyy/MM/dd"),
+										monthCalendar1.SelectionEnd.ToString("yyyy/MM/dd")));
 				   }
 				   catch (Exception ex)
 				   {

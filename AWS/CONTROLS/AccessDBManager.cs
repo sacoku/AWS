@@ -393,15 +393,15 @@ namespace AWS.CONTROLS
                             + "," + visibility
                             + ") ";
 				//iLog.Debug("[QUERY]\n" + sql);
-				iLog.Info("AWS_MIN 데이터 INSERT 쿼리 실행.");
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
-                //conn.Open();
-                cmd.ExecuteNonQuery();
+				iLog.Info("AWS_MIN 데이터 INSERT 쿼리 실행.");
+				//conn.Open();
+				cmd.ExecuteNonQuery();
             }
             catch(Exception e)
             {
-                iLog.Error(e.Message);
+                iLog.Error(e.ToString());
             } finally
             {
                 //conn.Close();
