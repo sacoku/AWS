@@ -45,7 +45,7 @@ namespace AWS.CONTROLS
             try
             {
                 if (conn != null) Close();
-                conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + dataSourceFile);
+                conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + dataSourceFile);
                 conn.Open();
 
 				iLog.Debug(string.Format("Access DB[{0}]에 접속되었습니다.", dataSourceFile));
