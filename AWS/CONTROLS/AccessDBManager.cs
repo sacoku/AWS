@@ -48,7 +48,7 @@ namespace AWS.CONTROLS
                 conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + dataSourceFile);
                 conn.Open();
 
-				iLog.Info(string.Format("Access DB[{0}]에 접속되었습니다.", dataSourceFile));
+				iLog.Debug(string.Format("Access DB[{0}]에 접속되었습니다.", dataSourceFile));
 			} catch(Exception e)
             {
 				conn = null;
@@ -66,7 +66,7 @@ namespace AWS.CONTROLS
 				{
 					conn.Close();
 					conn = null;
-					iLog.Info("Access DB 접속이 해제 되었습니다.");
+					iLog.Debug("Access DB 접속이 해제 되었습니다.");
 				}
 			}
 			catch(Exception ex)
@@ -129,7 +129,7 @@ namespace AWS.CONTROLS
                                                      + "                  ,VISIBILITY DOUBLE						\n"
                                                      + ")";
 							//iLog.Debug(connCmd.CommandText);
-							iLog.Info("AWS_MIN 테이블 생성 쿼리 실행.");
+							iLog.Debug("AWS_MIN 테이블 생성 쿼리 실행.");
                             connCmd.ExecuteNonQuery();
 
 							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
@@ -196,7 +196,7 @@ namespace AWS.CONTROLS
 													 + "                  ,CHG_TIME DATETIME						\n"
 													 + ")";
 							//iLog.Debug(connCmd.CommandText);
-							iLog.Info("AWS_MONTH 테이블 생성 쿼리 실행.");
+							iLog.Debug("AWS_MONTH 테이블 생성 쿼리 실행.");
 							connCmd.ExecuteNonQuery();
 
 							iLog.Info("Database 파일을 생성했습니다.[" + fullFilename + "]");
@@ -236,7 +236,7 @@ namespace AWS.CONTROLS
 							   + "VALUES('"+ dt.ToString("yyyy-MM-dd") +"')";
 
 					//iLog.Debug("[QUERY]\n" + sql);
-					iLog.Info("AWS_MONTH INSERT 쿼리 실행.");
+					iLog.Debug("AWS_MONTH INSERT 쿼리 실행.");
 					OleDbCommand cmd = new OleDbCommand(sql, conn);
 					//conn.Open();
 					cmd.ExecuteNonQuery();
@@ -267,7 +267,7 @@ namespace AWS.CONTROLS
                              + "FROM AWS_MIN                                          ";
 
 				//iLog.Debug("[QUERY]\n" + sql);
-				iLog.Info("AWS_MIN 최대값 조회 쿼리 실행.");
+				iLog.Debug("AWS_MIN 최대값 조회 쿼리 실행.");
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
@@ -314,7 +314,7 @@ namespace AWS.CONTROLS
                              + "FROM AWS_MIN                                          ";
 
 				//iLog.Debug("[QUERY]\n" + sql);
-				iLog.Info("AWS_MIN 최소값 조회 쿼리 실행.");
+				iLog.Debug("AWS_MIN 최소값 조회 쿼리 실행.");
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
                 OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
@@ -409,7 +409,7 @@ namespace AWS.CONTROLS
 				//iLog.Debug("[QUERY]\n" + sql);
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
-				iLog.Info("AWS_MIN 데이터 INSERT 쿼리 실행.");
+				iLog.Debug("AWS_MIN 데이터 INSERT 쿼리 실행.");
 				//conn.Open();
 				cmd.ExecuteNonQuery();
             }
@@ -441,7 +441,7 @@ namespace AWS.CONTROLS
 							 + "FROM AWS_MIN								  ";
 
 				//iLog.Debug("[QUERY]\n" + sql);
-				iLog.Info("AWS_MIN 데이터 평균 조회 쿼리 실행.");
+				iLog.Debug("AWS_MIN 데이터 평균 조회 쿼리 실행.");
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
 				OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(cmd);
@@ -500,7 +500,7 @@ namespace AWS.CONTROLS
 							values[7],
 							dt.ToString("yyyy-MM-dd"));
 				//iLog.Debug("[QUERY]\n" + sql);
-				iLog.Info("AWS_MONTH UPDATE 쿼리 실행.["+ dt.ToString("yyyy-MM-dd") + "]");
+				iLog.Debug("AWS_MONTH UPDATE 쿼리 실행.["+ dt.ToString("yyyy-MM-dd") + "]");
 
 				OleDbCommand cmd = new OleDbCommand(sql, conn);
 				//conn.Open();

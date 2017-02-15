@@ -87,25 +87,25 @@
   </appender>
   <logger name = "Logger">
     <!--logger level-->
-    <level value="debug" />
+    <level value="info" />
     <!--위에 설정한 appender  name입니다.-->
     <appender-ref ref="exlog" />
   </logger>
   <logger name = "Dev0">
     <!--logger level-->
-    <level value="debug" />
+    <level value="info" />
     <!--위에 설정한 appender  name입니다.-->
     <appender-ref ref="dev_log1" />
   </logger>
   <logger name = "Dev1">
     <!--logger level-->
-    <level value="debug" />
+    <level value="info" />
     <!--위에 설정한 appender  name입니다.-->
     <appender-ref ref="dev_log2" />
   </logger>
   <logger name = "Dev2">
     <!--logger level-->
-    <level value="debug" />
+    <level value="info" />
     <!--위에 설정한 appender  name입니다.-->
     <appender-ref ref="dev_log3" />
   </logger>

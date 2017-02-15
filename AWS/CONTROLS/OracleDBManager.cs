@@ -51,7 +51,7 @@ namespace AWS.CONTROLS
                 conn = new OracleConnection(AWS.Config.AWSConfig.oracleDbStr);
                 conn.Open();
 
-                iLog.Info("오라클에 접속되었습니다.");
+                iLog.Debug("오라클에 접속되었습니다.");
             } catch(Exception e)
             {
 				conn = null;
@@ -69,7 +69,7 @@ namespace AWS.CONTROLS
 				{
 					conn.Close();
 					conn = null;
-					iLog.Info("오라클에 접속이 해제되었습니다.");
+					iLog.Debug("오라클에 접속이 해제되었습니다.");
 				}
             } 
             catch(Exception e)
@@ -173,7 +173,7 @@ namespace AWS.CONTROLS
 								 + ")																										";
 
 				//iLog.Debug("[QUERY]\n" + query);
-				iLog.Info("오라클 AWSTAMP" + AWSConfig.sValue[idx].LocNum + " INSERT 쿼리 실행.");
+				iLog.Debug("오라클 AWSTAMP" + AWSConfig.sValue[idx].LocNum + " INSERT 쿼리 실행.");
 
 				OracleCommand cmd = new OracleCommand();
 				cmd.Connection = conn;
@@ -208,7 +208,7 @@ namespace AWS.CONTROLS
 								 + "SLOCALCODE = '"+localcode+"'						    ";
 
 				//iLog.Debug("[QUERY]\n" + query);
-				iLog.Info("오라클 LOCALINFO 마지막 업데이트 시간 조회 쿼리 실행.");
+				iLog.Debug("오라클 LOCALINFO 마지막 업데이트 시간 조회 쿼리 실행.");
 
 				OracleCommand cmd = new OracleCommand();
 				cmd.Connection = conn;
@@ -248,7 +248,7 @@ namespace AWS.CONTROLS
 								 + "SLOCALCODE = '" + localcode + "'									    ";
 
 				//iLog.Debug("[QUERY]\n" + query);
-				iLog.Info("오라클 LOCALINFO 마지막 업데이트 시간 UPDATE 쿼리 실행.");
+				iLog.Debug("오라클 LOCALINFO 마지막 업데이트 시간 UPDATE 쿼리 실행.");
 
 				OracleCommand cmd = new OracleCommand();
 				cmd.Connection = conn;

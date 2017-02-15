@@ -152,12 +152,10 @@ namespace AWS
 				int minorV = v.Minor; // 부버전
 				int buildV = v.Build; // 빌드번호
 				int revisionV = v.Revision; // 수정번호
-				this.Text = string.Format("AWS v{0}.{1}.{2}.{3} (LastBuild:{4})",
+				this.Text = string.Format("AWS v{0}.{1} (LastBuild:{2})",
 										majorV,
 										minorV,
-										buildV,
-										revisionV,
-										new DateTime(2017, 02, 06).AddDays(buildV).AddSeconds(revisionV * 2).ToString("yyyy-MM-dd"));
+										new DateTime(2000, 1, 1).AddDays(buildV).AddSeconds(revisionV * 2).ToString("yyyy-MM-dd"));
 
 				//minor버젼이 홀수 일 경우 차트기능 enable
 				if ((minorV % 2) == 0) toolStripButton3.Visible = false;

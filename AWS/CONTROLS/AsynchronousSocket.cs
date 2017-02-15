@@ -93,7 +93,7 @@ namespace AWS.CONTROLS
 
 				// 접속된 소켓에 비동기 Receive 설정
 				this.workSocket.BeginReceive(buffer, 0, AsynchronousSocket.BufferSize, 0, new AsyncCallback(ReadCallback), this);
-				iLog.Info(AWSConfig.sValue[nIdx].Name + " 로거에 연결 되었습니다.");
+				iLog.Debug(AWSConfig.sValue[nIdx].Name + " 로거에 연결 되었습니다.");
 
 				if (AfterConnect != null)
 				{
@@ -191,7 +191,8 @@ namespace AWS.CONTROLS
         {
 			try
 			{
-				return this.workSocket.Connected;
+				if (workSocket != null) return this.workSocket.Connected;
+				else return false;
 			} 
 			catch(Exception ex)
 			{

@@ -285,7 +285,7 @@ namespace AWS.CONTROL
 								
 								// 현재 데이터를 요구한다								
 								this.WeatherSendCommand(m_CollectDt, this.StrToByteArray("AB?"));
-								iLog.Info(string.Format("{0} : {1}/{2:00}/{3:00} {4:00}:{5:00} 현재 데이터 요청",
+								iLog.Debug(string.Format("{0} : {1}/{2:00}/{3:00} {4:00}:{5:00} 현재 데이터 요청",
 											AWSConfig.sValue[iPanelIdx].Name,
 											m_CollectDt.Year,
 											m_CollectDt.Month,
@@ -296,7 +296,7 @@ namespace AWS.CONTROL
 							else
 							{
 								//iLog.Debug("\"요청 데이터 시간 < 현재 시간\" 의 조건이 맞을 경우 데이터를 보냅니다.");
-								iLog.Info(string.Format("{0} : 요청 데이터 시간[{1}/{2:00}/{3:00} {4:00}:{5:00}]",
+								iLog.Debug(string.Format("{0} : 요청 데이터 시간[{1}/{2:00}/{3:00} {4:00}:{5:00}]",
 												AWSConfig.sValue[iPanelIdx].Name,
 												m_CollectDt.Year,
 												m_CollectDt.Month,
@@ -314,7 +314,7 @@ namespace AWS.CONTROL
 					}
 					else
 					{
-						iLog.Info("요청 대기중입니다.");
+						iLog.Debug("요청 대기중입니다.");
 					}
 
 					Thread.Sleep(AWS.Config.AWSConfig.CDP * 1000);
@@ -984,7 +984,7 @@ namespace AWS.CONTROL
 
                 DataSet readDataSet = new DataSet();
 
-				iLog.Info("복구 기준 시간 : " + dt.ToString("yyyy-MM-dd HH:mm"));
+//				iLog.Info("복구 기준 시간 : " + dt.ToString("yyyy-MM-dd HH:mm"));
 
 				StringBuilder selectQuery = new StringBuilder()
 									.Append("SELECT										\n")
@@ -1036,6 +1036,7 @@ namespace AWS.CONTROL
 							Connect();
 
 							SendCommand(startDateTime, AWS.UTIL.CommonUtil.StrToByteArray("AQ?"));
+							/*
 							iLog.Info(string.Format("[MESSAGE TO LOGGER] {0}/{1:00}/{2:00} {3:00}:{4:00}:{5:00} 과거 데이터 요청",
 											startDateTime.Year,
 											startDateTime.Month,
@@ -1043,6 +1044,7 @@ namespace AWS.CONTROL
 											startDateTime.Hour,
 											startDateTime.Minute,
 											startDateTime.Second));
+							*/
 							rows++;
 						}
 
@@ -1065,7 +1067,7 @@ namespace AWS.CONTROL
 
 					if (isPauseMode) Resume();
 
-					iLog.Info("복구된 데이터는 총 " + rows + " 건 입니다.");
+					iLog.Info("복구 기준 시간 : " + dt.ToString("yyyy-MM-dd HH:mm") + " 복구된 데이터는 총 " + rows + " 건 입니다.");
                 }
             }
             catch (Exception e)
