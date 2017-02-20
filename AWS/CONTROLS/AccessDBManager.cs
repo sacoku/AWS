@@ -18,6 +18,7 @@ namespace AWS.CONTROLS
 {
     class AccessDBManager
     {
+
         private static AccessDBManager _INSTANCE = null;
 
         private OleDbConnection conn = null;
