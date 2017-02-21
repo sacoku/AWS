@@ -263,7 +263,7 @@
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,KB2468871">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4%28x86 및 x64%29 및 .NET Framework 4용 업데이트%28KB2468871%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29 and Update for .NET Framework 4 %28KB2468871%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
