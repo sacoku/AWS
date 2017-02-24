@@ -8,6 +8,7 @@ using log4net;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.OleDb;
 using System.IO;
 using System.Linq;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace AWS.CONTROLS
 {
-    class AccessDBManager
+    class AccessDBManager : IAWSDataBase
     {
 
         private static AccessDBManager _INSTANCE = null;
@@ -41,7 +42,7 @@ namespace AWS.CONTROLS
             return _INSTANCE;
         }
 
-        public OleDbConnection Connect(string dataSourceFile)
+        public DbConnection Connect(string dataSourceFile)
         {
             try
             {

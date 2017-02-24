@@ -141,6 +141,7 @@
     <Compile Include="CONTROLS\AsynchronousSocket.cs" />
     <Compile Include="CONTROLS\Calcuration.cs" />
     <Compile Include="CONTROLS\DataLogger.cs" />
+    <Compile Include="CONTROLS\MySqlDBManager.cs" />
     <Compile Include="CONTROLS\OracleDBManager.cs" />
     <Compile Include="CONTROLS\Protocol.cs">
       <SubType>Component</SubType>
@@ -148,6 +149,7 @@
     <Compile Include="CONTROLS\ProtocolItem.cs" />
     <Compile Include="CONTROLS\SafeInvokeHelper.cs" />
     <Compile Include="CONTROLS\SaveData.cs" />
+    <Compile Include="MODEL\IAWSDataBase.cs" />
     <Compile Include="MODEL\CircleQueue.cs" />
     <Compile Include="MODEL\CommandProtocol.cs" />
     <Compile Include="MODEL\DataLoggerEnvironment.cs" />
