@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Config;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -35,8 +36,7 @@ namespace Launcher
                 } else
                 {
                     Process p = new Process();
-                    //p.StartInfo = new ProcessStartInfo(@"D:\[01]Work\[02]Dev\[ZZ]REPOSITORY\AWS\AWS\bin\x86\Release\AWS.exe", string.Empty);
-                    p.StartInfo = new ProcessStartInfo(@"C:\AWS\BIN\AWS.exe", string.Empty);
+                    p.StartInfo = new ProcessStartInfo(AWSConfig.HOME_PATH + @"\BIN\AWS.exe", "W");
                     p.StartInfo.RedirectStandardOutput = false;
                     p.StartInfo.RedirectStandardError = true;
                     p.StartInfo.UseShellExecute = false;

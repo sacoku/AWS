@@ -57,21 +57,22 @@ Section "MainSection" SEC01
   File "config\AWSConfig.xml"
   SetOutPath "C:\AWS\BIN"
   
-
-  
-  File "AWS\bin\Debug\AWS.exe"
   CreateDirectory "$SMPROGRAMS\AWS 기상관제 프로그램"
-  CreateShortCut "$SMPROGRAMS\AWS 기상관제 프로그램\AWS 기상관제 프로그램.lnk" "C:\AWS\BIN\AWS.exe"
-  CreateShortCut "$DESKTOP\AWS 기상관제 프로그램.lnk" "C:\AWS\BIN\AWS.exe"
-  File "AWS\bin\Debug\ICSharpCode.SharpZipLib.dll"
-  File "AWS\bin\Debug\log4net.dll"
-  File "AWS\bin\Debug\logconfig.xml"
-  File "AWS\bin\Debug\NPOI.dll"
-  File "AWS\bin\Debug\NPOI.OOXML.dll"
-  File "AWS\bin\Debug\NPOI.OpenXml4Net.dll"
-  File "AWS\bin\Debug\NPOI.OpenXmlFormats.dll"
-  File "AWS\bin\Debug\SourceGrid.dll"
-  File "AWS\bin\Debug\ZedGraph.dll"
+  ;CreateShortCut "$SMPROGRAMS\AWS 기상관제 프로그램\AWS 기상관제 프로그램.lnk" "C:\AWS\BIN\AWS.exe"
+  CreateShortCut "$SMPROGRAMS\AWS 기상관제 프로그램\AWS 기상관제 프로그램.lnk" "C:\AWS\BIN\Launcher.exe"
+  ;CreateShortCut "$DESKTOP\AWS 기상관제 프로그램.lnk" "C:\AWS\BIN\AWS.exe"
+  CreateShortCut "$DESKTOP\AWS 기상관제 프로그램.lnk" "C:\AWS\BIN\Launcher.exe"
+  File "AWS\bin\x86\Release\AWS.exe"
+  File "AWS\bin\x86\Release\ICSharpCode.SharpZipLib.dll"
+  File "AWS\bin\x86\Release\log4net.dll"
+  File "AWS\bin\x86\Release\logconfig.xml"
+  File "AWS\bin\x86\Release\NPOI.dll"
+  File "AWS\bin\x86\Release\NPOI.OOXML.dll"
+  File "AWS\bin\x86\Release\NPOI.OpenXml4Net.dll"
+  File "AWS\bin\x86\Release\NPOI.OpenXmlFormats.dll"
+  File "AWS\bin\x86\Release\SourceGrid.dll"
+  File "AWS\bin\x86\Release\ZedGraph.dll"
+  File "Launcher\bin\x86\Release\Launcher.exe"
 SectionEnd
 
 Section -AdditionalIcons
@@ -81,10 +82,10 @@ SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "C:\AWS\BIN\AWS.exe"
+  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "C:\AWS\BIN\Launcher.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "C:\AWS\BIN\AWS.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "C:\AWS\BIN\Launcher.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
 SectionEnd
 
@@ -111,6 +112,7 @@ Section Uninstall
   Delete "C:\AWS\BIN\log4net.dll"
   Delete "C:\AWS\BIN\ICSharpCode.SharpZipLib.dll"
   Delete "C:\AWS\BIN\AWS.exe"
+  Delete "C:\AWS\BIN\Launcher.exe"
   Delete "C:\AWS\CONFIG\AWSConfig.xml"
   Delete "C:\AWS\AccessFile"
   Delete "C:\AWS\AWSDATA"

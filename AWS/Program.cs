@@ -26,6 +26,14 @@ namespace AWS
                 MessageBox.Show("이미 실행중입니다.");
                 return;
             }
+/*
+            if (Environment.GetCommandLineArgs().Length == 1)
+            {
+                MessageBox.Show("런처를 통해서 실행이 되어야 합니다.");
+                return;
+            }
+*/
+
             string appPath = Path.GetDirectoryName(Application.ExecutablePath);
 
             XmlConfigurator.Configure(new System.IO.FileInfo(appPath + @"\logconfig.xml"));
